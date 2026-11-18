@@ -25,17 +25,21 @@ npm run dev      # http://localhost:3000
 | `npm run build` | Static export to `out/` |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Generate route types and run `tsc` |
-| `npm run test` | Vitest unit tests (workflow engine) |
+| `npm run test` | Vitest unit tests (engine, workflows, UI logic) |
 | `npm run check` | Lint + typecheck + tests + build (run before committing) |
 
 ## Structure
 
 ```text
 src/
-  app/          routes: /, /projects, /projects/[slug], /about, /contact
+  app/          routes: /, /projects, /projects/[slug], /playground, /about, /contact
   components/   shared UI (ui.tsx), header/footer, project card
   content/      site.ts (identity, contact), projects.ts (case studies), skills.ts, experience.ts
-  features/playground/engine/   workflow schema, graph validation, executor (pure TS, tested)
+  features/playground/
+    engine/     workflow schema, graph validation, executor (pure TS, tested)
+    adapters/   simulated integrations (finance, helpdesk, documents)
+    workflows/  workflow definitions + sample inputs (expected outcomes tested)
+    ui/         React Flow graph, replay, inspector
 ```
 
 ## Content
