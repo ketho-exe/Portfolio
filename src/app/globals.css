@@ -1,52 +1,52 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-/* Light theme tokens. Dark is the default (see layout theme script). */
+/*
+ * One dark "glass" theme (design direction 8: Glass + Control Room + Editorial).
+ * Text colours are tuned for contrast on --bg and on .glass panels.
+ */
 :root {
-  --bg: #f6f6f3;
-  --surface: #ffffff;
-  --surface-2: #edede8;
-  --border: #d9d9d2;
-  --fg: #141413;
-  --muted: #595954;
-  --accent: #0a7444;
-  --accent-fg: #ffffff;
-  --accent-soft: rgb(10 116 68 / 0.09);
-  --danger: #b42318;
-  --danger-soft: rgb(180 35 24 / 0.08);
-  color-scheme: light;
-}
-
-[data-theme="dark"] {
   --bg: #0b0c0e;
-  --surface: #121316;
-  --surface-2: #191a1e;
-  --border: #25272c;
-  --fg: #ecece9;
-  --muted: #9b9c98;
-  --accent: #6ee7a8;
-  --accent-fg: #052211;
-  --accent-soft: rgb(110 231 168 / 0.08);
-  --danger: #f97066;
-  --danger-soft: rgb(249 112 102 / 0.1);
+  --surface: rgb(28 28 33 / 0.62);
+  --surface-solid: #16171b;
+  --surface-2: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.22);
+  --fg: #ffffff;
+  --soft: rgb(235 235 245 / 0.84);
+  --muted: rgb(235 235 245 / 0.72);
+  --accent: #ffd23f;
+  --accent-fg: #111214;
+  --accent-soft: rgb(255 210 63 / 0.12);
+  --ok: #30d158;
+  --ok-soft: rgb(48 209 88 / 0.12);
+  --danger: #ff8a84;
+  --danger-soft: rgb(255 105 97 / 0.14);
+  --code: rgb(0 0 0 / 0.4);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-fg: var(--fg);
+  --color-soft: var(--soft);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-code: var(--code);
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-serif: var(--font-instrument), Georgia, serif;
 }
 
 html {
@@ -59,6 +59,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
@@ -69,48 +70,299 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 4px;
 }
 
-/* Hero pipeline motif: nodes light up in sequence, a pulse travels each connector. */
-@keyframes node-active {
-  0%, 100% { border-color: var(--border); color: var(--muted); background: var(--surface); }
-  8%, 22% { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
-  30% { border-color: var(--border); color: var(--muted); background: var(--surface); }
+/* Serif display type: Instrument Serif ships one weight. */
+.font-serif {
+  font-weight: 400;
 }
 
-@keyframes wire-pulse {
-  0% { transform: translateX(-100%); opacity: 0; }
-  10% { opacity: 1; }
-  25%, 100% { transform: translateX(100%); opacity: 0; }
+/* ── Surfaces ─────────────────────────────────────────────────────────── */
+
+.glass {
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 18px 44px rgb(0 0 0 / 0.35);
 }
 
-.motif-node {
-  animation: node-active 6s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 1.2s);
-}
-
-.motif-wire::after {
-  content: "";
+/* Dotted backdrop behind every page, fading towards the bottom. */
+.bg-dots {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: wire-pulse 6s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 1.2s + 0.6s);
-  opacity: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgb(255 255 255 / 0.1) 1px, transparent 1.3px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(180deg, #000, rgb(0 0 0 / 0.4));
 }
 
-/* React Flow: map its variables onto our tokens. Its own styles live in @layer xyflow, so these win. */
+.canvas-dots {
+  background-image: radial-gradient(rgb(255 255 255 / 0.12) 1px, transparent 1.3px);
+  background-size: 20px 20px;
+}
+
+/* Blueprint grid used for case-study figures. */
+.blueprint {
+  background-color: rgb(15 45 82 / 0.35);
+  background-image: linear-gradient(rgb(238 244 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(238 244 255 / 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Interaction ──────────────────────────────────────────────────────── */
+
+.tap {
+  transition: transform 0.2s var(--spring), background-color 0.2s, opacity 0.2s;
+}
+.tap:hover {
+  transform: scale(1.02);
+}
+.tap:active {
+  transform: scale(0.97);
+}
+
+.lift {
+  transition: border-color 0.2s, transform 0.3s var(--spring);
+}
+.lift:hover {
+  border-color: rgb(255 210 63 / 0.6);
+  transform: translateY(-3px);
+}
+
+/* Animated underline for big links (contact email). */
+.underline-grow {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0 2px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.4s;
+}
+.underline-grow:hover {
+  background-size: 100% 2px;
+}
+
+/* Hollow numerals (About approach). Solid when more contrast is requested. */
+.step-numeral {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 210 63 / 0.75);
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes underline-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes belt {
+  from { left: -150px; }
+  to { left: 100%; }
+}
+@keyframes check-cycle {
+  0%, 8% { background: transparent; border-color: rgb(235 235 245 / 0.35); color: transparent; }
+  14%, 90% { background: var(--ok); border-color: var(--ok); color: #06210f; }
+  100% { background: transparent; border-color: rgb(235 235 245 / 0.35); color: transparent; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes float {
+  from { transform: translateY(-4px); }
+  to { transform: translateY(4px); }
+}
+@keyframes flow {
+  to { stroke-dashoffset: -12; }
+}
+@keyframes flip {
+  from { transform: rotateX(-90deg); opacity: 0.2; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes scroll-progress {
+  to { transform: scaleX(1); }
+}
+
+.pop {
+  animation: pop 0.7s var(--spring) both;
+}
+
+/* Yellow underline that draws under a hero word. */
+.draw-underline {
+  position: relative;
+  white-space: nowrap;
+}
+.draw-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.04em;
+  height: 0.06em;
+  border-radius: 99px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: underline-in 1.1s 0.8s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+
+.belt-item {
+  position: absolute;
+  top: 50%;
+  left: -150px;
+  animation: belt 18s linear infinite both;
+}
+.check-cycle {
+  animation: check-cycle 7s ease-in-out infinite both;
+}
+.flow-dash {
+  stroke-dasharray: 6 6;
+  animation: flow 1.2s linear infinite;
+}
+.flap {
+  display: inline-block;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #1d1f24;
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  animation: flip 0.5s cubic-bezier(0.3, 1.4, 0.6, 1) both;
+  animation-delay: calc(var(--d, 0) * 70ms);
+}
+
+/* Reading progress under the header on case studies (scroll-driven where supported). */
+.read-progress {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+@supports (animation-timeline: scroll()) {
+  .read-progress {
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* The Motion switch pauses decorative loops (class "loop"); the visitor's choice is stored. */
+[data-motion="off"] .loop,
+[data-motion="off"] .loop::after {
+  animation-play-state: paused !important;
+}
+
+/* ── Contact button (radial menu) ─────────────────────────────────────── */
+
+.fab-hit {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 205px;
+  height: 205px;
+  border-radius: 100% 0 0 0;
+  pointer-events: none;
+}
+.fab-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 184px;
+  height: 184px;
+  margin: -92px 0 0 -92px;
+  opacity: 0;
+  transform: scale(0.35);
+  transition: opacity 0.3s, transform 0.55s var(--spring);
+  pointer-events: none;
+}
+.fab-ring > span {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed rgb(255 210 63 / 0.45);
+  animation: spin 30s linear infinite;
+}
+.fab-icon-swap {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition: transform 0.45s var(--spring), opacity 0.2s;
+}
+.fab-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+.fab-item {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 3;
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.55s var(--spring);
+  transition-delay: calc(var(--i) * 60ms);
+}
+.fab-float {
+  display: block;
+  animation: float 3s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -1.1s);
+}
+.fab-tip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  padding: 5px 10px;
+  border-radius: 9px;
+  background: rgb(20 20 24 / 0.94);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.fab-link:hover .fab-tip,
+.fab-link:focus-visible .fab-tip {
+  opacity: 1;
+}
+.fab:is(:hover, :focus-within, .open) .fab-hit {
+  pointer-events: auto;
+}
+.fab:is(:hover, :focus-within, .open) .fab-ring {
+  opacity: 1;
+  transform: scale(1);
+}
+.fab:is(:hover, :focus-within, .open) .fab-chat {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+.fab:is(:hover, :focus-within, .open) .fab-close {
+  opacity: 1;
+  transform: none;
+}
+.fab:is(:hover, :focus-within, .open) .fab-item {
+  opacity: 1;
+  transform: translate(var(--x), var(--y));
+  pointer-events: auto;
+}
+
+/* ── React Flow (playground graph) ────────────────────────────────────── */
+
 .react-flow {
   --xy-background-color: transparent;
-  --xy-edge-stroke: var(--border);
+  --xy-edge-stroke: rgb(255 255 255 / 0.25);
   --xy-edge-stroke-selected: var(--accent);
   --xy-edge-label-background-color: var(--bg);
   --xy-edge-label-color: var(--muted);
   --xy-handle-background-color: var(--muted);
   --xy-handle-border-color: var(--bg);
-  --xy-controls-button-background-color: var(--surface);
-  --xy-controls-button-background-color-hover: var(--surface-2);
+  --xy-controls-button-background-color: var(--surface-solid);
+  --xy-controls-button-background-color-hover: #24252b;
   --xy-controls-button-color: var(--fg);
   --xy-controls-button-color-hover: var(--fg);
   --xy-controls-button-border-color: var(--border);
@@ -121,21 +373,54 @@ body {
   color: var(--muted);
 }
 .react-flow__edge.taken .react-flow__edge-path {
-  stroke: var(--accent);
+  stroke: var(--ok);
   stroke-width: 2;
 }
 .react-flow__edge.not-taken .react-flow__edge-path {
-  stroke-dasharray: 4 4;
+  stroke-dasharray: 5 5;
   opacity: 0.55;
 }
 .react-flow__edge-textbg {
   fill: var(--bg);
 }
 
+/* ── Preferences ──────────────────────────────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+  .belt-item {
+    display: none;
+  }
+  .check-cycle {
+    background: var(--ok) !important;
+    border-color: var(--ok) !important;
+    color: #06210f !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: #1c1c21;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --muted: rgb(235 235 245 / 0.9);
+    --soft: rgb(235 235 245 / 0.95);
+    --border: rgb(255 255 255 / 0.6);
+  }
+  .glass {
+    background: #1c1c21;
+  }
+  .step-numeral {
+    color: var(--accent);
+    -webkit-text-stroke: 0;
   }
 }

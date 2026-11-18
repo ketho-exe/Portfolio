@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("simulation is always labelled", async ({ page }) => {
-  await expect(page.getByText(/Runs entirely in your browser/)).toBeVisible();
+  await expect(page.getByText(/Everything runs in your browser/)).toBeVisible();
 });
 
 test("expense approval auto-approves the default sample", async ({ page }) => {

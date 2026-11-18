@@ -19,11 +19,12 @@ test.describe("every page", () => {
   }
 });
 
-test("main navigation reaches every section", async ({ page }) => {
+test("main navigation reaches every section", async ({ page, isMobile }) => {
   await page.goto("/");
-  const nav = page.getByRole("navigation", { name: "Main" });
+  // Phones and tablets get a bottom tab bar instead of the header links.
+  const nav = page.getByRole("navigation", { name: isMobile ? "Sections" : "Main" });
   for (const [label, path, heading] of [
-    ["Work", "/projects/", /projects/i],
+    ["Work", "/projects/", /built/i],
     ["Playground", "/playground/", /automation playground/i],
     ["About", "/about/", /./],
     ["Contact", "/contact/", /./],
@@ -37,43 +38,58 @@ test("main navigation reaches every section", async ({ page }) => {
   await expect(page).toHaveURL("/");
 });
 
-test("a project card opens its case study", async ({ page }) => {
+test("a project in the index opens its case study", async ({ page }) => {
   await page.goto("/projects/");
-  const firstCard = page.locator("article").first();
-  const title = (await firstCard.getByRole("heading").first().textContent())!.trim();
-  await firstCard.getByRole("link").first().click();
-  await expect(page).toHaveURL(/\/projects\/[a-z0-9-]+\/$/);
-  await expect(page.locator("h1")).toHaveText(title);
+  await page.getByRole("link", { name: /Facilities Management App/ }).click();
+  await expect(page).toHaveURL("/projects/facilities-management-app/");
+  await expect(page.locator("h1")).toHaveText("Facilities Management App");
+});
+
+test("the project filter narrows the index", async ({ page }) => {
+  await page.goto("/projects/");
+  await page.getByRole("button", { name: /Personal & demos/ }).click();
+  await expect(page.getByRole("status")).toHaveText(/Showing 3 of 7/);
+  await expect(page.getByRole("link", { name: /Automation Playground/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Facilities Management App/ })).toHaveCount(0);
 });
 
 test("unknown pages return 404 with a way home", async ({ page }) => {
   const res = await page.goto("/does-not-exist/");
   expect(res?.status()).toBe(404);
-  await expect(page.locator("h1")).toHaveText(/doesn.t exist/);
+  await expect(page.locator("h1")).toHaveText(/cancelled/);
+  await expect(page.getByText("/does-not-exist/")).toBeVisible();
   await page.getByRole("link", { name: "Back to home" }).click();
   await expect(page).toHaveURL("/");
 });
 
-test("theme toggle switches theme and remembers it", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
+test("the Motion switch pauses decorative motion and remembers it", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");
-  await expect(html).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch colour theme" }).click();
-  await expect(html).toHaveAttribute("data-theme", "light");
+  const motion = page.getByRole("switch", { name: "Motion" });
+  await expect(motion).toHaveAttribute("aria-checked", "true");
+  await motion.click();
+  await expect(motion).toHaveAttribute("aria-checked", "false");
+  await expect(html).toHaveAttribute("data-motion", "off");
   await page.reload();
-  await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(html).toHaveAttribute("data-motion", "off");
+  await expect(page.getByRole("switch", { name: "Motion" })).toHaveAttribute("aria-checked", "false");
 });
 
-test("system light preference is respected on first visit", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "light" });
-  await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+test("the contact button opens email, LinkedIn and GitHub links", async ({ page }) => {
+  await page.goto("/about/");
+  const button = page.getByRole("button", { name: "Contact me" });
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  const links = page.getByRole("list", { name: "Contact links" });
+  await expect(links.getByRole("link", { name: "Email" })).toHaveAttribute("href", /^mailto:/);
+  await expect(links.getByRole("link", { name: /GitHub/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(button).toHaveAttribute("aria-expanded", "false");
 });
 
 test("CV downloads as a PDF", async ({ page, request }) => {
-  await page.goto("/");
-  const href = await page.getByRole("link", { name: "Download CV" }).getAttribute("href");
+  await page.goto("/about/");
+  const href = await page.getByRole("link", { name: /Download CV/ }).getAttribute("href");
   const res = await request.get(href!);
   expect(res.status()).toBe(200);
   expect(res.headers()["content-type"]).toBe("application/pdf");

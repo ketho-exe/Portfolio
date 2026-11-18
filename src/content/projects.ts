@@ -38,6 +38,14 @@ export type Project = {
   technologies: string[];
   featured: boolean;
   links?: { demo?: string; source?: string };
+  /** Display headline for the case study (serif). Defaults to `name`. */
+  headline?: string;
+  /** Before/after figures, only where the owner supplied them. */
+  result?: { before: string; after: string; per: string };
+  /** Simplified process figure for the case study: stages in order. */
+  flow?: { tool: string; title: string; body: string }[];
+  /** Pull quote shown after the contribution section. Must restate the content, not add to it. */
+  pullQuote?: string;
   /** Each section is a list of paragraphs. */
   caseStudy: Partial<Record<CaseStudyKey, string[]>>;
 };
@@ -88,6 +96,16 @@ export const projects: Project[] = [
     period: "2024–2025",
     technologies: ["PowerShell", "Excel VBA", "Zapier"],
     featured: true,
+    headline: "The weekly billing run that stopped eating the afternoon",
+    result: { before: "Several hours", after: "≤ 30 minutes", per: "per weekly run" },
+    flow: [
+      { tool: "CSV", title: "Billing data in", body: "The week's billing data arrives as CSV." },
+      { tool: "Excel VBA", title: "Import to templates", body: "Data loads into billing templates." },
+      { tool: "Excel VBA", title: "Validate & cross-check", body: "Figures validated, totals cross-checked." },
+      { tool: "Zapier", title: "Generate invoices", body: "Invoices created from the checked data." },
+      { tool: "Zapier", title: "Sync records", body: "Records synced to the accounting systems." },
+    ],
+    pullQuote: "The whole process — designed, built, documented and maintained on my own.",
     caseStudy: {
       overview: [
         "Part of the firm's internal automation function, which I owned as sole developer during my internship.",
@@ -104,7 +122,6 @@ export const projects: Project[] = [
       ],
       outcome: [
         "Processing time went from several hours to 30 minutes or less per weekly run.",
-        "No code or client data is shown here.",
       ],
     },
   },

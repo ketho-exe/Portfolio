@@ -1,45 +1,53 @@
 import type { Metadata } from "next";
-import { ProjectCard } from "@/components/project-card";
-import { Container, Eyebrow, SectionHeading } from "@/components/ui";
-import { projects } from "@/content/projects";
+import { ProjectIndex } from "@/components/project-index";
+import { StatusDot, statusMeaning } from "@/components/status";
+import { Container, Em, Eyebrow } from "@/components/ui";
+import { getProject, projects } from "@/content/projects";
 
 export const metadata: Metadata = {
-  title: "Projects",
+  title: "Work",
   description: "Professional automation, integration and web application work, plus personal projects in development.",
 };
 
 export default function ProjectsPage() {
-  const professional = projects.filter((p) => p.kind === "Professional work");
-  const personal = projects.filter((p) => p.kind !== "Professional work");
-
   return (
-    <Container className="pt-16 sm:pt-24">
-      <Eyebrow>Work</Eyebrow>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Projects</h1>
-      <p className="mt-4 max-w-2xl text-muted text-pretty">
-        Professional work is described with confidential details removed. Personal projects and recreations use
-        synthetic data only.
+    <Container className="pt-16 pb-24 sm:pt-[72px]">
+      <div className="flex flex-wrap items-end justify-between gap-10">
+        <div className="min-w-0 flex-[999_1_560px]">
+          <Eyebrow>Work · {projects.length} projects</Eyebrow>
+          <h1 className="mt-3.5 font-serif text-[clamp(64px,9vw,140px)] leading-[0.9] tracking-[-0.02em]">
+            Things I&apos;ve <Em>built</Em>.
+          </h1>
+          <p className="mt-6 max-w-[580px] text-[19px] leading-normal text-soft">
+            Professional work for an accounting firm and a multi-business group, plus personal projects that show what
+            can&apos;t be shown from client work.
+          </p>
+        </div>
+        <aside aria-labelledby="legend-title" className="glass max-w-[400px] flex-[1_1_320px] rounded-3xl px-6 py-[22px]">
+          <h2 id="legend-title" className="font-mono text-xs font-medium tracking-[0.06em] text-muted">
+            HOW TO READ THE LABELS
+          </h2>
+          <dl className="mt-3.5 grid gap-2.5 text-sm leading-snug">
+            {statusMeaning.map(([status, meaning]) => (
+              <div key={status} className="flex gap-2.5">
+                <dt className="flex shrink-0 items-center gap-2 font-semibold">
+                  <StatusDot status={status} />
+                  {status}
+                </dt>
+                <dd className="text-soft">{meaning}</dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
+      </div>
+
+      <ProjectIndex projects={projects} featured={getProject("billing-run-automation")!} />
+
+      <p className="mt-7 max-w-[720px] text-sm leading-relaxed text-muted">
+        Client and employer work is described from my CV and kept general on purpose: no proprietary code, data,
+        screenshots or named sub-businesses. Where something can be shown, it&apos;s rebuilt with synthetic data in the
+        playground.
       </p>
-
-      <section className="mt-14">
-        <SectionHeading eyebrow="Professional work" title="Delivered for employers" />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {professional.map((p) => (
-            <ProjectCard key={p.slug} project={p} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-20">
-        <SectionHeading eyebrow="Personal projects" title="In development">
-          Planned public demonstrations, including anonymised recreations of professional workflows.
-        </SectionHeading>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {personal.map((p) => (
-            <ProjectCard key={p.slug} project={p} />
-          ))}
-        </div>
-      </section>
     </Container>
   );
 }

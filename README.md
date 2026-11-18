@@ -35,7 +35,7 @@ npm run dev      # http://localhost:3000
 ```text
 src/
   app/          routes: /, /projects, /projects/[slug], /playground, /about, /contact
-  components/   shared UI (ui.tsx), header/footer, project card
+  components/   shared UI (ui.tsx), header/footer/tab bar, contact button, project index
   content/      site.ts (identity, contact), projects.ts (case studies), skills.ts, experience.ts
   features/playground/
     engine/     workflow schema, graph validation, executor (pure TS, tested)
@@ -43,7 +43,7 @@ src/
     intake/     file checks, PDF/OCR reading, .eml parsing, CSV export (runs in the browser)
     workflows/  workflow definitions + sample inputs (expected outcomes tested)
     ui/         React Flow graph, replay, inspector
-e2e/            Playwright specs (pages, navigation, theme, playground, file intake, axe); fixtures/ builds synthetic test files
+e2e/            Playwright specs (pages, navigation, motion switch, playground, file intake, axe); fixtures/ builds synthetic test files
 scripts/        serve-out.mjs (static server for e2e), copy-vendor.mjs (pre-dev/build), fix-segment-files.mjs (postbuild, see below)
 ```
 

@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
 import { runWorkflow, type AdapterRegistry, type Data, type RunResult } from "../engine";
 import { toCsv } from "../intake/csv";
-import { checkFile, formatBytes } from "../intake/limits";
+import { checkFile, documentKind, formatBytes, type DocumentKind } from "../intake/limits";
 import { workflows, type PlaygroundWorkflow } from "../workflows";
 import { canvasHeight, layoutWorkflow } from "./layout";
 import { eventDelay, replayFrame, type UiStatus } from "./replay";
@@ -38,6 +38,7 @@ export function Playground() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("input");
   const runToken = useRef(0);
+  const runner = useRef<HTMLElement>(null);
   // The visitor's own file. Held in memory only; never uploaded or stored.
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -88,21 +89,33 @@ export function Playground() {
     clearRun();
   }
 
+  function pickWorkflow(index: number) {
+    setWorkflowIndex(index);
+    loadSample(workflows[index].samples[0].id, index);
+    setTab("input");
+  }
+
+  /** Checks the file, then hands it to the workflow that can read it (switching workflow if needed). */
   async function attachFile(f: File) {
-    const upload = wf.upload;
-    if (!upload) return;
-    const problem = checkFile(f, upload.kinds);
+    const problem = checkFile(f, uploadKinds);
     if (problem) {
       setFileError(problem);
       return;
     }
+    const kind = documentKind(f.name)!;
+    const target = wf.upload?.kinds.includes(kind) ? workflowIndex : workflows.findIndex((w) => w.upload?.kinds.includes(kind));
     try {
-      const input = await upload.toInput(f);
+      const input = await workflows[target].upload!.toInput(f);
+      if (target !== workflowIndex) {
+        setWorkflowIndex(target);
+        setSampleId(workflows[target].samples[0].id);
+      }
       clearRun();
       setFile(f);
       setFileError(null);
       setInputText(pretty(input));
       setSelectedId(null);
+      setTab("input");
     } catch (e) {
       setFileError(e instanceof Error ? e.message : "This file couldn't be read.");
     }
@@ -120,9 +133,11 @@ export function Playground() {
     const r = await runWorkflow(def, parsed.data, { adapters: file ? activeAdapters(wf, file, onProgress) : wf.adapters });
     if (token !== runToken.current) return; // reset or re-run happened meanwhile
     setProcessing(null);
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Reduced motion, or the site's Motion switch turned off: show the finished run at once.
+    const instant =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off";
     setResult(r);
-    setCursor(reduceMotion ? r.events.length : 0);
+    setCursor(instant ? r.events.length : 0);
     setTab("log");
   }
 
@@ -141,76 +156,36 @@ export function Playground() {
     : running
       ? { text: "Running…", tone: "text-accent" }
       : result.status === "success"
-        ? { text: "Completed", tone: "text-accent" }
+        ? { text: "Completed", tone: "text-ok" }
         : result.status === "failed"
           ? { text: "Failed", tone: "text-danger" }
           : { text: "Not run: invalid input", tone: "text-danger" };
 
-  return (
-    <div className="mt-10">
-      {workflows.length > 1 && (
-        <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Workflow">
-          {workflows.map((w, i) => (
-            <button
-              key={w.definition.id}
-              type="button"
-              aria-pressed={i === workflowIndex}
-              onClick={() => {
-                setWorkflowIndex(i);
-                loadSample(w.samples[0].id, i);
-                setTab("input");
-              }}
-              className={`rounded-full border px-4 py-1.5 text-sm transition ${
-                i === workflowIndex ? "border-accent bg-accent-soft text-fg" : "border-border text-muted hover:text-fg"
-              }`}
-            >
-              {w.definition.name}
-            </button>
-          ))}
-        </div>
-      )}
+  const control = "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-[18px] text-[15px] font-semibold";
 
-      <div className="rounded-xl border border-border bg-surface">
-        {/* Header and controls */}
-        <div className="flex flex-col gap-4 border-b border-border p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-xl">
-            <h2 className="text-lg font-semibold tracking-tight">{def.name}</h2>
-            <p className="mt-1 text-sm text-muted text-pretty">{def.description}</p>
-          </div>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1 text-xs text-muted">
-              Sample input
-              <select
-                value={file ? "" : sampleId}
-                onChange={(e) => loadSample(e.target.value)}
-                className="h-10 rounded-lg border border-border bg-bg px-3 text-sm text-fg"
-              >
-                {file && (
-                  <option value="" disabled>
-                    Your file
-                  </option>
-                )}
-                {wf.samples.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              onClick={run}
-              disabled={!parsed.ok || running}
-              className="h-10 rounded-full bg-accent px-5 text-sm font-medium text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {result && frame.done ? "Run again" : "Run"}
-            </button>
-            {running && !processing ? (
+  return (
+    <>
+      <section ref={runner} aria-label="Workflow runner" className="glass mt-9 scroll-mt-24 overflow-hidden rounded-[30px]">
+        {/* Workflow picker and run controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3.5 py-3">
+          <div role="group" aria-label="Workflow" className="inline-flex flex-wrap gap-1 rounded-full bg-surface-2 p-1">
+            {workflows.map((w, i) => (
               <button
+                key={w.definition.id}
                 type="button"
-                onClick={() => setCursor(result!.events.length)}
-                className="h-10 rounded-full border border-border px-4 text-sm transition hover:bg-surface-2"
+                aria-pressed={i === workflowIndex}
+                onClick={() => pickWorkflow(i)}
+                className={`min-h-10 cursor-pointer rounded-full px-4 text-sm transition-colors ${
+                  i === workflowIndex ? "bg-accent font-bold text-accent-fg" : "font-semibold text-soft hover:text-fg"
+                }`}
               >
+                {w.definition.name}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {running && !processing ? (
+              <button type="button" onClick={() => setCursor(result!.events.length)} className={`${control} tap border border-border-strong`}>
                 Skip to end
               </button>
             ) : (
@@ -218,25 +193,63 @@ export function Playground() {
                 type="button"
                 onClick={() => loadSample(sampleId)}
                 title={file ? "Clear your file and the run" : undefined}
-                className="h-10 rounded-full border border-border px-4 text-sm transition hover:bg-surface-2"
+                className={`${control} tap border border-border-strong`}
               >
                 Reset
               </button>
             )}
+            <button
+              type="button"
+              onClick={run}
+              disabled={!parsed.ok || running}
+              className={`${control} tap bg-accent px-[22px] font-bold text-accent-fg disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 4.5v15l13-7.5z" />
+              </svg>
+              {result && frame.done ? "Run again" : "Run"}
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5 text-xs sm:px-5">
-          <p className="text-muted">
+        {/* Workflow description and sample */}
+        <div className="flex flex-col gap-4 border-b border-border p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <h2 className="font-serif text-3xl leading-tight">{def.name}</h2>
+            <p className="mt-1.5 text-[15px] leading-relaxed text-soft text-pretty">{def.description}</p>
+          </div>
+          <label className="flex shrink-0 flex-col gap-1.5 font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
+            Sample input
+            <select
+              value={file ? "" : sampleId}
+              onChange={(e) => loadSample(e.target.value)}
+              className="h-11 min-w-56 cursor-pointer rounded-xl border border-border-strong bg-surface-solid px-3 font-sans text-[15px] tracking-normal text-fg normal-case"
+            >
+              {file && (
+                <option value="" disabled>
+                  Your file
+                </option>
+              )}
+              {wf.samples.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5 text-[13px] sm:px-5">
+          <p className="text-soft">
             {file ? `Your file: ${file.name} (${formatBytes(file.size)}). Read on this device, never uploaded.` : sample.description}
           </p>
-          <p role="status" aria-live="polite" className={`font-mono ${runStatus.tone}`}>
+          <p role="status" aria-live="polite" className={`font-mono text-xs ${runStatus.tone}`}>
             {runStatus.text}
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px]" style={{ "--canvas-h": `${graphHeight}px` } as CSSProperties}>
-          <div className="h-(--canvas-h) border-b border-border lg:border-r lg:border-b-0">
+        <div className="grid lg:grid-cols-[1fr_400px]" style={{ "--canvas-h": `${graphHeight}px` } as CSSProperties}>
+          <div className="canvas-dots h-(--canvas-h) border-b border-border lg:border-r lg:border-b-0">
             <FlowGraph key={def.id} definition={def} frame={frame} selectedId={selectedId} badges={badges} onSelect={select} />
           </div>
 
@@ -244,28 +257,15 @@ export function Playground() {
             <TabBar value={tab} onChange={setTab} />
             <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-5" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
               {tab === "input" && (
-                <>
-                  {wf.upload && (
-                    <UploadBox
-                      hint={wf.upload.hint}
-                      accept={acceptFor(wf)}
-                      file={file}
-                      error={fileError}
-                      disabled={processing !== null}
-                      onFile={attachFile}
-                      onClear={() => loadSample(sampleId)}
-                    />
-                  )}
-                  <InputPanel
-                    text={inputText}
-                    error={parsed.ok ? null : parsed.error}
-                    readOnly={file !== null}
-                    onChange={(t) => {
-                      setInputText(t);
-                      clearRun();
-                    }}
-                  />
-                </>
+                <InputPanel
+                  text={inputText}
+                  error={parsed.ok ? null : parsed.error}
+                  readOnly={file !== null}
+                  onChange={(t) => {
+                    setInputText(t);
+                    clearRun();
+                  }}
+                />
               )}
               {tab === "step" && (
                 <StepPanel
@@ -287,8 +287,34 @@ export function Playground() {
         {result && frame.done && (
           <ResultPanel result={result} fileStem={def.id} labelOf={(id) => def.nodes.find((n) => n.id === id)?.label ?? id} />
         )}
-      </div>
-    </div>
+      </section>
+
+      <section aria-labelledby="own-title" className="mt-[72px] flex flex-wrap gap-5">
+        <div className="min-w-0 flex-[1_1_380px]">
+          <p className="font-mono text-xs tracking-[0.08em] text-accent">BRING YOUR OWN</p>
+          <h2 id="own-title" className="mt-2.5 font-serif text-[clamp(40px,4.4vw,60px)] leading-none">
+            Run it on your own document.
+          </h2>
+          <p className="mt-4 max-w-[480px] text-[17px] leading-relaxed text-soft">
+            Invoice extraction reads your PDF or image; email routing reads your .eml file. It&apos;s all read in your
+            browser. Nothing is uploaded or stored, and the page can&apos;t contact other servers.
+          </p>
+        </div>
+        <UploadBox
+          accept={uploadKinds.map((k) => acceptByKind[k]).join(",")}
+          file={file}
+          error={fileError}
+          disabled={processing !== null}
+          onFile={attachFile}
+          onRun={() => {
+            runner.current?.scrollIntoView({ block: "start" });
+            run();
+          }}
+          canRun={parsed.ok && !running}
+          onClear={() => loadSample(sampleId)}
+        />
+      </section>
+    </>
   );
 }
 
@@ -314,7 +340,7 @@ function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => void })
           aria-controls={`panel-${t.id}`}
           tabIndex={value === t.id ? 0 : -1}
           onClick={() => onChange(t.id)}
-          className={`-mb-px border-b-2 px-3 py-2.5 text-sm transition ${
+          className={`-mb-px min-h-11 cursor-pointer border-b-2 px-3 text-sm font-medium transition ${
             value === t.id ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
           }`}
         >
@@ -354,7 +380,7 @@ function InputPanel({
         aria-invalid={error !== null}
         aria-describedby={error ? "workflow-input-error" : undefined}
         rows={16}
-        className={`mt-2 w-full resize-y rounded-lg border bg-bg p-3 font-mono text-xs leading-relaxed text-fg ${
+        className={`mt-2 w-full resize-y rounded-xl border bg-code p-3.5 font-mono text-[13px] leading-[1.7] text-fg ${
           error ? "border-danger" : "border-border"
         }`}
       />
@@ -398,7 +424,7 @@ function StepPanel({
               <button
                 type="button"
                 onClick={() => onSelect(n.id)}
-                className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-surface-2"
+                className="flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-2 text-left text-sm transition hover:bg-surface-2"
               >
                 <span className="w-5 font-mono text-xs text-muted">{i + 1}</span>
                 <span className="flex-1 truncate">{n.label}</span>
@@ -427,14 +453,14 @@ function StepPanel({
       </div>
 
       {simulatedIds.has(node.id) && (
-        <p className="rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
+        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
           <span className="text-accent">Simulated.</span> A deterministic mock stands in for the real service. No external
           system is contacted.
         </p>
       )}
       {badges[node.id] === "on device" && (
-        <p className="rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
-          <span className="text-accent">Runs on your device.</span> This step does real work in your browser. Your data is
+        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
+          <span className="text-ok">Runs on your device.</span> This step does real work in your browser. Your data is
           not uploaded anywhere.
         </p>
       )}
@@ -473,7 +499,7 @@ function LogPanel({ events }: { events: RunResult["events"] }) {
   }, [events.length]);
 
   if (!events.length) return <p className="text-xs text-muted">Run the workflow to see the execution log.</p>;
-  const tone = { info: "text-muted", success: "text-accent", error: "text-danger", skip: "text-muted opacity-70" };
+  const tone = { info: "text-soft", success: "text-ok", error: "text-danger", skip: "text-muted" };
   return (
     <ol ref={list} className="space-y-1.5 font-mono text-xs">
       {events.map((e) => (
@@ -490,8 +516,8 @@ function ResultPanel({ result, fileStem, labelOf }: { result: RunResult; fileSte
   const failedAt = result.status === "failed" ? result.order.find((id) => result.nodes[id].status === "error") : undefined;
   return (
     <div className="border-t border-border p-4 sm:p-5">
-      <p className="font-mono text-xs text-muted uppercase">Final result</p>
-      {result.status === "success" && <p className="mt-2 text-sm">The workflow completed.</p>}
+      <p className="font-mono text-xs tracking-[0.08em] text-muted uppercase">Final result</p>
+      {result.status === "success" && <p className="mt-2 font-semibold text-ok">The workflow completed.</p>}
       {failedAt && (
         <p className="mt-2 text-sm">
           <span className="text-danger">Stopped at “{labelOf(failedAt)}”:</span> {result.error}
@@ -518,10 +544,10 @@ function ResultPanel({ result, fileStem, labelOf }: { result: RunResult; fileSte
             <Json value={result.output} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" onClick={() => download(`${fileStem}-result.json`, `${pretty(result.output)}\n`, "application/json")} className="rounded-full border border-border px-4 py-1.5 transition hover:bg-surface-2">
+            <button type="button" onClick={() => download(`${fileStem}-result.json`, `${pretty(result.output)}\n`, "application/json")} className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 font-semibold transition hover:bg-surface-2">
               Download JSON
             </button>
-            <button type="button" onClick={() => download(`${fileStem}-result.csv`, toCsv(result.output!), "text/csv")} className="rounded-full border border-border px-4 py-1.5 transition hover:bg-surface-2">
+            <button type="button" onClick={() => download(`${fileStem}-result.csv`, toCsv(result.output!), "text/csv")} className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 font-semibold transition hover:bg-surface-2">
               Download CSV
             </button>
             <span className="text-xs text-muted">Generated in your browser.</span>
@@ -533,20 +559,22 @@ function ResultPanel({ result, fileStem, labelOf }: { result: RunResult; fileSte
 }
 
 function UploadBox({
-  hint,
   accept,
   file,
   error,
   disabled,
+  canRun,
   onFile,
+  onRun,
   onClear,
 }: {
-  hint: string;
   accept: string;
   file: File | null;
   error: string | null;
   disabled: boolean;
+  canRun: boolean;
   onFile: (f: File) => void;
+  onRun: () => void;
   onClear: () => void;
 }) {
   const [over, setOver] = useState(false);
@@ -557,15 +585,32 @@ function UploadBox({
     if (f && !disabled) onFile(f);
   };
   return (
-    <div className="mb-5">
+    <div className="min-w-0 flex-[1_1_420px]">
       {file ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/60 bg-accent-soft px-3 py-2.5 text-sm">
-          <span className="min-w-0 truncate">
-            {file.name} <span className="text-muted">· {formatBytes(file.size)}</span>
-          </span>
-          <button type="button" onClick={onClear} disabled={disabled} className="shrink-0 text-xs text-muted transition hover:text-fg disabled:opacity-40">
-            Remove file
-          </button>
+        <div className="glass flex flex-col gap-4 rounded-[26px] border-2! border-[rgb(255_210_63/0.6)]! p-6 sm:p-8">
+          <p className="min-w-0">
+            <span className="block font-mono text-xs tracking-[0.06em] text-accent">READY ON THIS DEVICE</span>
+            <span className="mt-2 block truncate text-lg font-semibold">{file.name}</span>
+            <span className="text-sm text-soft">{formatBytes(file.size)} · not uploaded</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onRun}
+              disabled={!canRun}
+              className="tap inline-flex min-h-11 cursor-pointer items-center rounded-full bg-accent px-5 text-[15px] font-bold text-accent-fg disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Run it
+            </button>
+            <button
+              type="button"
+              onClick={onClear}
+              disabled={disabled}
+              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border-strong px-5 text-[15px] font-semibold transition-colors hover:bg-surface-2 disabled:opacity-40"
+            >
+              Remove file
+            </button>
+          </div>
         </div>
       ) : (
         <label
@@ -575,12 +620,19 @@ function UploadBox({
           }}
           onDragLeave={() => setOver(false)}
           onDrop={onDrop}
-          className={`block cursor-pointer rounded-lg border border-dashed px-4 py-4 text-center text-sm transition focus-within:ring-2 focus-within:ring-accent ${
-            over ? "border-accent bg-accent-soft" : "border-border hover:border-muted"
+          className={`glass flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[26px] border-2! border-dashed! p-9 text-center transition-colors focus-within:border-accent! hover:border-accent! ${
+            over ? "border-accent! bg-accent-soft!" : "border-white/28!"
           }`}
         >
-          <span className="font-medium">Use your own file</span>
-          <span className="mt-1 block text-xs text-muted">Drop it here or choose a file. {hint}</span>
+          <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+          </svg>
+          <span className="text-lg font-semibold">Choose a file or drop it here</span>
+          <span className="font-mono text-xs leading-[1.7] text-soft">
+            PDF, PNG, JPG, WebP, TXT or .eml · up to 10 MB
+            <br />
+            first 5 PDF pages (3 with OCR) · English OCR
+          </span>
           <input
             type="file"
             accept={accept}
@@ -595,11 +647,11 @@ function UploadBox({
         </label>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-xs text-danger">
+        <p role="alert" className="mt-3 text-sm text-danger">
           {error}
         </p>
       )}
-      <p className="mt-2 text-xs text-muted">
+      <p className="mt-3 text-[13px] text-muted">
         Read in this browser and never uploaded. Nothing is saved: it&apos;s gone when you reset or leave the page.
       </p>
     </div>
@@ -624,8 +676,14 @@ function stepBadges(wf: PlaygroundWorkflow, adapters: AdapterRegistry): Record<s
   return out;
 }
 
-const acceptByKind = { pdf: ".pdf,application/pdf", image: ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp", text: ".txt,text/plain", email: ".eml,message/rfc822" };
-const acceptFor = (wf: PlaygroundWorkflow) => (wf.upload?.kinds ?? []).map((k) => acceptByKind[k]).join(",");
+const acceptByKind: Record<DocumentKind, string> = {
+  pdf: ".pdf,application/pdf",
+  image: ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp",
+  text: ".txt,text/plain",
+  email: ".eml,message/rfc822",
+};
+/** Every file kind some workflow can read. */
+const uploadKinds = [...new Set(workflows.flatMap((w) => w.upload?.kinds ?? []))];
 
 function download(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -639,9 +697,9 @@ function download(name: string, content: string, type: string) {
 const chipTone: Record<UiStatus, string> = {
   idle: "text-muted",
   running: "text-accent",
-  success: "text-accent",
+  success: "text-ok",
   error: "text-danger",
-  skipped: "text-muted opacity-70",
+  skipped: "text-muted",
 };
 const chipText: Record<UiStatus, string> = { idle: "Not run", running: "Running", success: "Done", error: "Failed", skipped: "Skipped" };
 
@@ -665,7 +723,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Json({ value }: { value: unknown }) {
   return (
-    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-bg p-3 font-mono text-xs leading-relaxed">
+    <pre className="max-h-72 overflow-auto rounded-xl border border-border bg-code p-3.5 font-mono text-xs leading-relaxed">
       {pretty(value)}
     </pre>
   );

@@ -1,44 +1,83 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Container, Eyebrow } from "@/components/ui";
+import { Container, Em, Eyebrow } from "@/components/ui";
 import { Playground } from "@/features/playground/ui/playground";
 
 export const metadata: Metadata = {
   title: "Automation playground",
-  description: "Run and inspect example business workflows step by step. Simulated in your browser.",
+  description: "Run and inspect example business workflows step by step, in your browser. Integrations are simulated.",
 };
+
+const how = [
+  [
+    "A typed engine",
+    "Workflows are data, checked with a Zod schema and a graph validator before they run. The runner is async, never throws, and gives each step a timeout.",
+  ],
+  [
+    "Honest adapters",
+    "Every integration step is either a labelled simulation (approval, accounting, helpdesk) or real work done on your device (reading a document). A real integration would sit behind the same interface on a server.",
+  ],
+  [
+    "Private by design",
+    "Files are read in your browser with PDF.js and Tesseract.js, served from this site. A Content-Security-Policy stops the page from sending data anywhere else.",
+  ],
+];
+
+const link = "text-fg underline decoration-muted underline-offset-4 transition hover:decoration-accent";
 
 export default function PlaygroundPage() {
   return (
-    <Container wide className="pt-16 sm:pt-24">
-      <Eyebrow>Playground</Eyebrow>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Automation playground</h1>
-      <p className="mt-4 max-w-2xl text-muted text-pretty">
-        Choose a workflow and a sample, run it and watch each step execute. Select any step to see exactly what it received and
-        produced. Edit the input, or try your own invoice or email file.
-      </p>
-      <p className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-border px-3 py-1.5 font-mono text-xs text-muted">
-        <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
-        Runs entirely in your browser. Your files are read on your device and never uploaded. Accounting, approval and helpdesk steps are simulated.
-      </p>
+    <Container wide className="pt-14 pb-24">
+      <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6">
+        <div>
+          <Eyebrow>Personal project · In progress</Eyebrow>
+          <h1 className="mt-3 font-serif text-[clamp(52px,7vw,104px)] leading-[0.95]">
+            Automation <Em>Playground</Em>
+          </h1>
+          <p className="mt-[18px] max-w-[640px] text-[19px] leading-normal text-soft">
+            Pick a workflow and a sample, press Run, and watch every step execute. Select a step to see what it received
+            and produced. Everything runs in your browser; approval, accounting and helpdesk steps are simulated and
+            labelled.
+          </p>
+        </div>
+        <ul className="flex flex-wrap gap-2 font-mono text-xs">
+          <li className="rounded-full border border-white/20 px-3 py-2">no account</li>
+          <li className="rounded-full border border-white/20 px-3 py-2">no uploads</li>
+          <li className="rounded-full border border-[rgb(255_210_63/0.5)] px-3 py-2 text-accent">simulated integrations</li>
+        </ul>
+      </div>
 
       <Playground />
 
-      <p className="mt-6 max-w-2xl text-sm text-muted text-pretty">
-        Expense approval is recreated from{" "}
-        <Link href="/projects/glide-apps-xero-integration/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
-          professional work on a Glide–Xero approval flow
-        </Link>
-        , and invoice extraction from{" "}
-        <Link href="/projects/document-intake-pipeline/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
-          OCR document intake work
-        </Link>
-        . Email routing is illustrative. All data is synthetic. How it works:{" "}
-        <Link href="/projects/automation-playground/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
-          case study
-        </Link>
-        .
-      </p>
+      <section aria-labelledby="how-title" className="mt-[72px]">
+        <h2 id="how-title" className="font-serif text-[clamp(40px,4.4vw,60px)] leading-none">
+          How it&apos;s built
+        </h2>
+        <div className="mt-7 grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-5">
+          {how.map(([title, body], i) => (
+            <div key={title} className="glass rounded-[26px] p-[26px]">
+              <p className="font-mono text-xs text-accent">{String(i + 1).padStart(2, "0")}</p>
+              <h3 className="mt-2.5 text-xl font-semibold">{title}</h3>
+              <p className="mt-2.5 text-[15px] leading-relaxed text-soft">{body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted text-pretty">
+          Expense approval is recreated from{" "}
+          <Link href="/projects/glide-apps-xero-integration/" className={link}>
+            professional work on a Glide–Xero approval flow
+          </Link>
+          , and invoice extraction from{" "}
+          <Link href="/projects/document-intake-pipeline/" className={link}>
+            OCR document intake work
+          </Link>
+          . Email routing is illustrative. All data is synthetic. More detail in the{" "}
+          <Link href="/projects/automation-playground/" className={link}>
+            case study
+          </Link>
+          .
+        </p>
+      </section>
     </Container>
   );
 }
