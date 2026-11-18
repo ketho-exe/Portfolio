@@ -11,6 +11,8 @@ const port = Number(process.env.PORT ?? 4173);
 const types = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript",
+  ".mjs": "text/javascript",
+  ".wasm": "application/wasm",
   ".css": "text/css",
   ".json": "application/json",
   ".txt": "text/plain; charset=utf-8",
@@ -22,7 +24,7 @@ const types = {
   ".pdf": "application/pdf",
 };
 
-const compressible = new Set([".html", ".js", ".css", ".json", ".txt", ".xml", ".svg"]);
+const compressible = new Set([".html", ".js", ".mjs", ".css", ".json", ".txt", ".xml", ".svg", ".wasm"]);
 
 function send(res, status, file, req) {
   const headers = { "content-type": types[extname(file)] ?? "application/octet-stream" };

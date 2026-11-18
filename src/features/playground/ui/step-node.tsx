@@ -10,7 +10,8 @@ export type StepNodeData = {
   nodeType: NodeType;
   status: UiStatus;
   selected: boolean;
-  simulated: boolean;
+  /** "simulated" or "on device": how an integration step actually runs. */
+  badge?: string;
 };
 export type StepNode = Node<StepNodeData, "step">;
 
@@ -51,7 +52,7 @@ const glyphColour: Record<UiStatus, string> = {
 const handle = "!size-1.5 !min-w-0 !min-h-0 !border-0 !bg-muted";
 
 export function StepNodeView({ data }: NodeProps<StepNode>) {
-  const { label, nodeType, status, selected, simulated } = data;
+  const { label, nodeType, status, selected, badge } = data;
   return (
     <div
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
@@ -63,7 +64,7 @@ export function StepNodeView({ data }: NodeProps<StepNode>) {
       <div className="flex items-center justify-between gap-2 font-mono text-[10px] text-muted uppercase">
         <span>
           {typeLabel[nodeType]}
-          {simulated && <span className="ml-1.5 normal-case text-accent">· simulated</span>}
+          {badge && <span className="ml-1.5 normal-case text-accent">· {badge}</span>}
         </span>
         <span aria-hidden="true" className={`text-xs ${glyphColour[status]}`}>
           {statusGlyph[status]}

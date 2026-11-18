@@ -1,4 +1,5 @@
 import { helpdeskAdapters } from "../adapters/helpdesk";
+import { parseEml } from "../intake/eml";
 import type { PlaygroundWorkflow } from "./types";
 
 /**
@@ -182,6 +183,17 @@ export const emailRouting: PlaygroundWorkflow = {
   },
 
   adapters: helpdeskAdapters,
+
+  upload: {
+    kinds: ["email"],
+    hint: "An .eml file (most mail apps can save or download a message as .eml), up to 10 MB. Parsed on your device.",
+    async toInput(file) {
+      const email = parseEml(await file.text());
+      if (!email.from && !email.subject && !email.body) throw new Error("This doesn't look like an email (.eml) file.");
+      const clip = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
+      return { from: email.from, subject: clip(email.subject, 200), body: clip(email.body, 4000) };
+    },
+  },
 
   samples: [
     {

@@ -1,11 +1,14 @@
-import { documentAdapters } from "../adapters/documents";
+import { documentAdapters, localTextExtractionAdapter } from "../adapters/documents";
+import { readDocument } from "../intake/read-document";
 import type { PlaygroundWorkflow } from "./types";
 
 /**
- * Invoice intake with mocked AI extraction (a recreation of OCR document intake work).
- * Synthetic documents; text extraction and AI extraction are simulated, deterministic adapters.
+ * Invoice intake (a recreation of OCR document intake work).
+ * Samples: synthetic invoice text, simulated text extraction.
+ * Uploads: the visitor's own PDF or image, read on their device with PDF.js / Tesseract.js OCR.
+ * Field extraction is a real rule-based parser with confidence scores (no AI model).
  *
- * receive → check-file → extract-text → ai-extract → schema → confident? ─true→ queue ──┐
+ * receive → check-file → extract-text → extract-fields → schema → confident? ─true→ queue ──┐
  *                                                                        └false→ review ─┴→ result
  */
 export const documentProcessing: PlaygroundWorkflow = {
@@ -13,7 +16,7 @@ export const documentProcessing: PlaygroundWorkflow = {
     id: "document-processing",
     name: "Invoice extraction",
     description:
-      "A supplier invoice is checked, its text extracted, and its fields pulled out by a mocked AI step with a confidence score for each. The result is validated against a schema, then queued for approval or sent to a person to review.",
+      "A supplier invoice is checked and its text extracted, then rule-based extraction reads each field and scores its confidence. The result is validated against a schema, then queued for approval or sent to a person to review. Try a sample, or your own PDF or image: it's read on your device and never uploaded.",
     nodes: [
       {
         id: "receive",
@@ -31,10 +34,11 @@ export const documentProcessing: PlaygroundWorkflow = {
             {
               field: "fileName",
               required: true,
-              pattern: "^[\\w.-]+\\.(pdf|png|jpe?g|txt)$",
-              message: '"fileName" must be a PDF, PNG, JPG or TXT file',
+              pattern: "^[^/\\\\]{1,200}\\.([Pp][Dd][Ff]|[Pp][Nn][Gg]|[Jj][Pp][Ee]?[Gg]|[Ww][Ee][Bb][Pp]|[Tt][Xx][Tt])$",
+              message: '"fileName" must be a PDF, PNG, JPG, WebP or TXT file',
             },
             { field: "receivedVia", required: true, oneOf: ["email", "upload", "scanner"] },
+            { field: "sizeBytes", type: "number", min: 1, max: 10485760, message: "File must be under 10 MB" },
             { field: "text", type: "string", max: 6000 },
           ],
         },
@@ -43,16 +47,17 @@ export const documentProcessing: PlaygroundWorkflow = {
         id: "extract-text",
         type: "integration",
         label: "Extract text",
-        description: "Simulated OCR / text-layer extraction. In this demo the document's text is part of the input.",
-        config: { adapter: "document.extractText" },
+        description:
+          "Your file: PDF text layer, or OCR for scans and images, on your device. Samples: the sample's text stands in for the document (simulated).",
+        config: { adapter: "document.extractText", timeoutMs: 90_000 },
       },
       {
-        id: "ai-extract",
+        id: "extract-fields",
         type: "integration",
-        label: "AI field extraction",
+        label: "Extract invoice fields",
         description:
-          "Simulated: a deterministic parser stands in for a language model, so results repeat and nothing leaves your browser. Each field gets a confidence score.",
-        config: { adapter: "ai.extractInvoice" },
+          'Rule-based, not AI: reads labelled fields like "Total due:" and scores its confidence in each. It never invents a missing value. A production system might use an AI model here; this runs on your device instead.',
+        config: { adapter: "extract.invoiceFields" },
       },
       {
         id: "schema",
@@ -118,8 +123,8 @@ export const documentProcessing: PlaygroundWorkflow = {
     edges: [
       { id: "receive-check", source: "receive", target: "check-file" },
       { id: "check-extract", source: "check-file", target: "extract-text" },
-      { id: "extract-ai", source: "extract-text", target: "ai-extract" },
-      { id: "ai-schema", source: "ai-extract", target: "schema" },
+      { id: "extract-fields", source: "extract-text", target: "extract-fields" },
+      { id: "fields-schema", source: "extract-fields", target: "schema" },
       { id: "schema-confident", source: "schema", target: "confident" },
       { id: "confident-queue", source: "confident", target: "queue", sourceHandle: "true" },
       { id: "confident-review", source: "confident", target: "review", sourceHandle: "false" },
@@ -129,6 +134,18 @@ export const documentProcessing: PlaygroundWorkflow = {
   },
 
   adapters: documentAdapters,
+
+  upload: {
+    kinds: ["pdf", "image", "text"],
+    hint: "PDF, PNG, JPG, WebP or TXT, up to 10 MB. Scans and photos are read with OCR.",
+    async toInput(file) {
+      return { fileName: file.name, receivedVia: "upload", sizeBytes: file.size };
+    },
+    adapters: (file, onProgress) => ({
+      ...documentAdapters,
+      "document.extractText": localTextExtractionAdapter(file, readDocument, onProgress),
+    }),
+  },
 
   samples: [
     {

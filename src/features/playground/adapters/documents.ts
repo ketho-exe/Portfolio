@@ -1,34 +1,72 @@
 import type { Adapter, Data, JsonValue } from "../engine";
+import { MIN_READABLE_CHARS, normaliseText, readableChars } from "../intake/limits";
+import type { ReadProgress, ReadResult } from "../intake/read-document";
 
 /**
- * Simulated document adapters. Nothing leaves the browser and no model is called:
- * a deterministic parser stands in for AI extraction so every run gives the same result.
+ * Document adapters. Nothing leaves the browser and no AI model is called.
+ * - Sample runs: the sample's text stands in for the document (simulated extraction).
+ * - Uploads: PDF.js / Tesseract.js read the real file on the visitor's device.
+ * - Field extraction is a real, deterministic rule-based parser in both cases.
  */
 
-const MIN_READABLE_CHARS = 20;
+const unreadable = (fileName: unknown) => ({ ok: false as const, error: `No readable text found in ${String(fileName)}.` });
 
-/** Stand-in for OCR / text-layer extraction: normalises the text and refuses documents with none. */
+function withText(input: Data, text: string, extra: Data = {}) {
+  const lineCount = text.split("\n").filter(Boolean).length;
+  return { ok: true as const, output: { ...input, ...extra, text, lineCount }, note: `${lineCount} lines of text` };
+}
+
+/** Sample runs: the sample already contains the document's text, so extraction is simulated. */
 export const textExtractionAdapter: Adapter = {
   id: "document.extractText",
-  label: "Text extraction (simulated)",
+  label: "Text extraction (sample text)",
   simulated: true,
   run(input: Data) {
-    const raw = typeof input.text === "string" ? input.text : "";
-    const lines = raw
-      .split(/\r?\n/)
-      .map((l) => l.trim().replace(/\s{2,}/g, "  "))
-      .filter((l, i, all) => l !== "" || (i > 0 && all[i - 1] !== ""));
-    const text = lines.join("\n").trim();
-
-    if (text.replace(/\s/g, "").length < MIN_READABLE_CHARS) {
-      return { ok: false, error: `No readable text found in ${String(input.fileName)}.` };
-    }
-    const lineCount = text.split("\n").filter(Boolean).length;
-    return { ok: true, output: { ...input, text, lineCount }, note: `${lineCount} lines of text` };
+    const { text } = normaliseText(typeof input.text === "string" ? input.text : "");
+    return readableChars(text) < MIN_READABLE_CHARS ? unreadable(input.fileName) : withText(input, text);
   },
 };
 
-// ── Mock AI extraction ────────────────────────────────────────────────────
+const methodLabel: Record<ReadResult["method"], string> = {
+  "pdf-text": "PDF text layer",
+  "pdf-ocr": "OCR of scanned PDF",
+  "image-ocr": "OCR",
+  "plain-text": "plain text",
+};
+
+/**
+ * Uploads: reads the visitor's actual file on their device. `read` is injected so tests can
+ * run without a browser; the UI passes `readDocument`.
+ */
+export function localTextExtractionAdapter(
+  file: File,
+  read: (file: File, onProgress: ReadProgress) => Promise<ReadResult>,
+  onProgress: ReadProgress = () => {},
+): Adapter {
+  return {
+    id: textExtractionAdapter.id,
+    label: "Text extraction (on your device)",
+    simulated: false,
+    runsLocally: true,
+    async run(input: Data) {
+      let result: ReadResult;
+      try {
+        result = await read(file, onProgress);
+      } catch (e) {
+        // ReadError messages are written for visitors; anything else stays generic.
+        const message = e instanceof Error && e.name === "ReadError" ? e.message : "This document couldn't be read.";
+        return { ok: false, error: message };
+      }
+      if (readableChars(result.text) < MIN_READABLE_CHARS) return unreadable(input.fileName);
+      const out = withText(input, result.text, {
+        source: { method: methodLabel[result.method], pages: result.pages, truncated: result.truncated },
+      });
+      return { ...out, note: `${out.note} via ${methodLabel[result.method]}${result.truncated ? " (truncated)" : ""}` };
+    },
+  };
+}
+
+// ── Rule-based field extraction ───────────────────────────────────────────
 
 /** Labelled values ("Total due: £12.00") score high; guesses from layout score lower. */
 const LABELLED = 0.96;
@@ -133,10 +171,16 @@ export function extractInvoiceFields(text: string): Record<string, Field> {
 
 const REQUIRED = ["supplier", "invoiceNumber", "invoiceDate", "total"] as const;
 
-export const aiExtractionAdapter: Adapter = {
-  id: "ai.extractInvoice",
-  label: "AI extraction (simulated)",
-  simulated: true,
+/**
+ * Reads invoice fields from text with labelled-field rules and scores its confidence in each.
+ * Real and deterministic; it never invents a value it can't find. A production system might use
+ * an AI model at this step; this one runs locally so documents never leave the device.
+ */
+export const fieldExtractionAdapter: Adapter = {
+  id: "extract.invoiceFields",
+  label: "Field extraction (rules)",
+  simulated: false,
+  runsLocally: true,
   run(input: Data) {
     const text = typeof input.text === "string" ? input.text : "";
     const fields = extractInvoiceFields(text);
@@ -157,7 +201,7 @@ export const aiExtractionAdapter: Adapter = {
         ...input,
         extracted,
         extraction: {
-          model: "mock-extractor (simulated)",
+          method: "rules",
           confidence,
           lowestConfidence,
           lowConfidenceFields: lowFields.length ? lowFields.join(", ") : "none",
@@ -170,5 +214,5 @@ export const aiExtractionAdapter: Adapter = {
 
 export const documentAdapters = {
   [textExtractionAdapter.id]: textExtractionAdapter,
-  [aiExtractionAdapter.id]: aiExtractionAdapter,
+  [fieldExtractionAdapter.id]: fieldExtractionAdapter,
 };

@@ -15,11 +15,11 @@ export default function PlaygroundPage() {
       <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Automation playground</h1>
       <p className="mt-4 max-w-2xl text-muted text-pretty">
         Choose a workflow and a sample, run it and watch each step execute. Select any step to see exactly what it received and
-        produced. Edit the input to try your own cases.
+        produced. Edit the input, or try your own invoice or email file.
       </p>
       <p className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-border px-3 py-1.5 font-mono text-xs text-muted">
         <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
-        Simulation: runs entirely in your browser. No real accounting, email, helpdesk or AI services are contacted.
+        Runs entirely in your browser. Your files are read on your device and never uploaded. Accounting, approval and helpdesk steps are simulated.
       </p>
 
       <Playground />

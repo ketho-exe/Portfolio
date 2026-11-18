@@ -2,7 +2,7 @@
 
 Personal portfolio and digital studio: web development, software solutions, business automation and integrations.
 
-**Status:** in development, not yet deployed. Site, case studies and About content are in place; the automation playground is next.
+**Status:** in development, not yet deployed. Site, case studies, About content and the automation playground are in place.
 
 ## Stack
 
@@ -21,8 +21,8 @@ npm run dev      # http://localhost:3000
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Static export to `out/` |
+| `npm run dev` | Development server (`predev` copies PDF.js / Tesseract.js assets into `public/vendor/`) |
+| `npm run build` | Static export to `out/` (`prebuild` copies vendor assets, `postbuild` fixes Windows segment files) |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Generate route types and run `tsc` |
 | `npm run test` | Vitest unit tests (engine, workflows, UI logic) |
@@ -39,11 +39,12 @@ src/
   content/      site.ts (identity, contact), projects.ts (case studies), skills.ts, experience.ts
   features/playground/
     engine/     workflow schema, graph validation, executor (pure TS, tested)
-    adapters/   simulated integrations (finance, helpdesk, documents)
+    adapters/   integrations: simulated (finance, helpdesk) or on-device (document reading, field rules)
+    intake/     file checks, PDF/OCR reading, .eml parsing, CSV export (runs in the browser)
     workflows/  workflow definitions + sample inputs (expected outcomes tested)
     ui/         React Flow graph, replay, inspector
-e2e/            Playwright specs (pages, navigation, theme, playground, axe)
-scripts/        serve-out.mjs (static server for e2e), fix-segment-files.mjs (postbuild, see below)
+e2e/            Playwright specs (pages, navigation, theme, playground, file intake, axe); fixtures/ builds synthetic test files
+scripts/        serve-out.mjs (static server for e2e), copy-vendor.mjs (pre-dev/build), fix-segment-files.mjs (postbuild, see below)
 ```
 
 ## Content
@@ -58,10 +59,17 @@ None yet. A `.env.example` will be added with the first one.
 
 Not deployed yet. `npm run build` produces a static site in `out/` that can be served by any static host. Hosting choice: see the project vault (`Hosting and Costs`).
 
+Host requirements for the playground's file intake:
+
+- Serve `.mjs` as `text/javascript` and `.wasm` as `application/wasm`, or the PDF reader won't load.
+- `out/vendor/` holds about 19 MB of PDF.js / Tesseract.js assets (fetched only when a visitor reads a file). They are copied from `node_modules` at build time and not committed.
+- Production pages carry a Content-Security-Policy `<meta>` tag (`connect-src 'self'`). If the host adds its own CSP header, keep it at least as strict, and allow `worker-src 'self'` and `blob:` images.
+
 ## Known limitations
 
 - Professional case studies are anonymised: no screenshots or code.
-- Personal projects (playground, dashboard, document processor) are planned. Their pages describe intent only.
+- The dashboard and document processor projects are planned. Their pages describe intent only.
+- Playground file intake: up to 10 MB, the first 5 PDF pages (3 for OCR), English OCR only. Field extraction is rule-based, not AI.
 - After changing `generateStaticParams`, restart `npm run dev`, or new slugs 404 in dev.
 - No contact form yet (a static export has no server; this needs a small serverless endpoint later).
 

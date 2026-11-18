@@ -48,3 +48,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# self-hosted document tools (copied from node_modules by scripts/copy-vendor.mjs)
+/public/vendor/

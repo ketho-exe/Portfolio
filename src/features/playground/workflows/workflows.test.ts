@@ -12,8 +12,11 @@ describe.each(workflows.map((w) => [w.definition.name, w] as const))("%s", (_, w
     expect(r.ok ? [] : r.issues).toEqual([]);
   });
 
-  it("only uses simulated adapters in the browser", () => {
-    for (const adapter of Object.values(wf.adapters)) expect(adapter.simulated).toBe(true);
+  it("every adapter is either simulated or runs entirely on the device", () => {
+    const uploadAdapters = wf.upload?.adapters?.(new File(["x"], "x.pdf"), () => {}) ?? {};
+    for (const adapter of [...Object.values(wf.adapters), ...Object.values(uploadAdapters)]) {
+      expect(adapter.simulated || adapter.runsLocally === true, adapter.id).toBe(true);
+    }
   });
 
   it("has unique sample ids", () => {

@@ -91,6 +91,8 @@ const IntegrationConfig = z.strictObject({
   /** Adapter id from the adapter registry passed to `runWorkflow`. */
   adapter: z.string().min(1),
   params: z.record(z.string(), Json).default({}),
+  /** Overrides the run's per-step timeout, for slow local work such as OCR. */
+  timeoutMs: z.number().int().min(100).max(120_000).optional(),
 });
 
 const OutputConfig = z.strictObject({ pick: z.array(PathSchema).optional() });

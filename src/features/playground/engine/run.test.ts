@@ -113,6 +113,22 @@ describe("runWorkflow: adapter failures", () => {
     expect(r.error).toBe("Step timed out after 20 ms.");
   });
 
+  it("a step's own timeout overrides the run default, for slow local work like OCR", async () => {
+    const slow = () => new Promise<{ ok: true; output: object }>((r) => setTimeout(() => r({ ok: true, output: {} }), 40));
+    const patient = linear([
+      trigger,
+      { id: "call", type: "integration", label: "Call", config: { adapter: "x", timeoutMs: 500 } },
+      output(),
+    ]);
+    expect((await runWorkflow(wf, {}, { adapters: adapter(slow as never), timeoutMs: 20 })).status).toBe("failed");
+    expect((await runWorkflow(patient, {}, { adapters: adapter(slow as never), timeoutMs: 20 })).status).toBe("success");
+  });
+
+  it("rejects step timeouts outside 100 ms to 2 minutes", async () => {
+    const bad = linear([trigger, { id: "call", type: "integration", label: "Call", config: { adapter: "x", timeoutMs: 600_000 } }, output()]);
+    expect((await runWorkflow(bad, {}, { adapters: adapter(() => ({ ok: true, output: {} })) })).status).toBe("invalid");
+  });
+
   it("rejects adapter output that is not an object", async () => {
     const r = await runWorkflow(wf, {}, { adapters: adapter(() => ({ ok: true, output: [] as never })) });
     expect(r.error).toBe("Adapter returned invalid data.");

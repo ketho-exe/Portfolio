@@ -86,16 +86,16 @@ describe("invoice extraction specifics", () => {
     expect(r.nodes.confident.status).toBe("skipped");
   });
 
-  it("both extraction steps are labelled simulated", async () => {
+  it("sample text extraction is labelled simulated; rule-based field extraction is real", async () => {
     const r = await runSample(documentProcessing, "clean");
     expect(r.nodes["extract-text"].simulated).toBe(true);
-    expect(r.nodes["ai-extract"].simulated).toBe(true);
+    expect(r.nodes["extract-fields"].simulated).toBe(false);
     expect(r.nodes.review.status).toBe("skipped");
   });
 
   it("unreadable documents stop before extraction", async () => {
     const r = await runSample(documentProcessing, "no-text");
     expect(r.error).toBe("No readable text found in scan-0413.jpg.");
-    expect(r.nodes["ai-extract"].status).toBe("skipped");
+    expect(r.nodes["extract-fields"].status).toBe("skipped");
   });
 });

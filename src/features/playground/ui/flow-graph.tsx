@@ -28,12 +28,12 @@ type Props = {
   definition: WorkflowInput;
   frame: ReplayFrame;
   selectedId: string | null;
-  simulatedIds: Set<string>;
+  badges: Record<string, string>;
   onSelect: (id: string) => void;
 };
 
 /** Read-only workflow canvas. Selection and status come from the parent; nothing is draggable or editable. */
-export default function FlowGraph({ definition, frame, selectedId, simulatedIds, onSelect }: Props) {
+export default function FlowGraph({ definition, frame, selectedId, badges, onSelect }: Props) {
   const positions = useMemo(() => layoutWorkflow(definition), [definition]);
   const touch = useCoarsePointer();
 
@@ -46,7 +46,7 @@ export default function FlowGraph({ definition, frame, selectedId, simulatedIds,
       nodeType: n.type,
       status: frame.statuses[n.id],
       selected: n.id === selectedId,
-      simulated: simulatedIds.has(n.id),
+      badge: badges[n.id],
     },
   }));
 

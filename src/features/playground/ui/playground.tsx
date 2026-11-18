@@ -1,9 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
-import { runWorkflow, type Data, type RunResult } from "../engine";
-import { workflows } from "../workflows";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
+import { runWorkflow, type AdapterRegistry, type Data, type RunResult } from "../engine";
+import { toCsv } from "../intake/csv";
+import { checkFile, formatBytes } from "../intake/limits";
+import { workflows, type PlaygroundWorkflow } from "../workflows";
 import { canvasHeight, layoutWorkflow } from "./layout";
 import { eventDelay, replayFrame, type UiStatus } from "./replay";
 import { statusGlyph, typeLabel } from "./step-node";
@@ -36,6 +38,10 @@ export function Playground() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("input");
   const runToken = useRef(0);
+  // The visitor's own file. Held in memory only; never uploaded or stored.
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<{ message: string; fraction?: number } | null>(null);
 
   const parsed = useMemo((): { ok: true; data: Data } | { ok: false; error: string } => {
     try {
@@ -51,13 +57,11 @@ export function Playground() {
 
   const frame = replayFrame(def, result, cursor);
   const graphHeight = useMemo(() => canvasHeight(layoutWorkflow(def)), [def]);
-  const running = result !== null && !frame.done;
+  const running = processing !== null || (result !== null && !frame.done);
+  const badges = useMemo(() => stepBadges(wf, file ? activeAdapters(wf, file, () => {}) : wf.adapters), [wf, file]);
   const simulatedIds = useMemo(
-    () =>
-      new Set(
-        def.nodes.filter((n) => n.type === "integration" && wf.adapters[n.config.adapter]?.simulated).map((n) => n.id),
-      ),
-    [def, wf],
+    () => new Set(Object.entries(badges).filter(([, b]) => b === "simulated").map(([id]) => id)),
+    [badges],
   );
 
   // Step the replay cursor through the event log.
@@ -71,6 +75,7 @@ export function Playground() {
     runToken.current++;
     setResult(null);
     setCursor(0);
+    setProcessing(null);
   }
 
   function loadSample(id: string, index = workflowIndex) {
@@ -78,14 +83,43 @@ export function Playground() {
     setSampleId(s.id);
     setInputText(pretty(s.input));
     setSelectedId(null);
+    setFile(null);
+    setFileError(null);
     clearRun();
+  }
+
+  async function attachFile(f: File) {
+    const upload = wf.upload;
+    if (!upload) return;
+    const problem = checkFile(f, upload.kinds);
+    if (problem) {
+      setFileError(problem);
+      return;
+    }
+    try {
+      const input = await upload.toInput(f);
+      clearRun();
+      setFile(f);
+      setFileError(null);
+      setInputText(pretty(input));
+      setSelectedId(null);
+    } catch (e) {
+      setFileError(e instanceof Error ? e.message : "This file couldn't be read.");
+    }
   }
 
   async function run() {
     if (!parsed.ok) return;
     const token = ++runToken.current;
-    const r = await runWorkflow(def, parsed.data, { adapters: wf.adapters });
+    setResult(null);
+    setCursor(0);
+    if (file) setProcessing({ message: "Starting" });
+    const onProgress = (message: string, fraction?: number) => {
+      if (token === runToken.current) setProcessing({ message, fraction });
+    };
+    const r = await runWorkflow(def, parsed.data, { adapters: file ? activeAdapters(wf, file, onProgress) : wf.adapters });
     if (token !== runToken.current) return; // reset or re-run happened meanwhile
+    setProcessing(null);
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setResult(r);
     setCursor(reduceMotion ? r.events.length : 0);
@@ -97,7 +131,12 @@ export function Playground() {
     setTab("step");
   }
 
-  const runStatus: { text: string; tone: string } = !result
+  const runStatus: { text: string; tone: string } = processing
+    ? {
+        text: `${processing.message}…${processing.fraction !== undefined ? ` ${Math.round(processing.fraction * 100)}%` : ""}`,
+        tone: "text-accent",
+      }
+    : !result
     ? { text: "Ready", tone: "text-muted" }
     : running
       ? { text: "Running…", tone: "text-accent" }
@@ -119,6 +158,7 @@ export function Playground() {
               onClick={() => {
                 setWorkflowIndex(i);
                 loadSample(w.samples[0].id, i);
+                setTab("input");
               }}
               className={`rounded-full border px-4 py-1.5 text-sm transition ${
                 i === workflowIndex ? "border-accent bg-accent-soft text-fg" : "border-border text-muted hover:text-fg"
@@ -141,10 +181,15 @@ export function Playground() {
             <label className="flex flex-col gap-1 text-xs text-muted">
               Sample input
               <select
-                value={sampleId}
+                value={file ? "" : sampleId}
                 onChange={(e) => loadSample(e.target.value)}
                 className="h-10 rounded-lg border border-border bg-bg px-3 text-sm text-fg"
               >
+                {file && (
+                  <option value="" disabled>
+                    Your file
+                  </option>
+                )}
                 {wf.samples.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
@@ -160,7 +205,7 @@ export function Playground() {
             >
               {result && frame.done ? "Run again" : "Run"}
             </button>
-            {running ? (
+            {running && !processing ? (
               <button
                 type="button"
                 onClick={() => setCursor(result!.events.length)}
@@ -172,6 +217,7 @@ export function Playground() {
               <button
                 type="button"
                 onClick={() => loadSample(sampleId)}
+                title={file ? "Clear your file and the run" : undefined}
                 className="h-10 rounded-full border border-border px-4 text-sm transition hover:bg-surface-2"
               >
                 Reset
@@ -181,7 +227,9 @@ export function Playground() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5 text-xs sm:px-5">
-          <p className="text-muted">{sample.description}</p>
+          <p className="text-muted">
+            {file ? `Your file: ${file.name} (${formatBytes(file.size)}). Read on this device, never uploaded.` : sample.description}
+          </p>
           <p role="status" aria-live="polite" className={`font-mono ${runStatus.tone}`}>
             {runStatus.text}
           </p>
@@ -189,17 +237,35 @@ export function Playground() {
 
         <div className="grid lg:grid-cols-[1fr_380px]" style={{ "--canvas-h": `${graphHeight}px` } as CSSProperties}>
           <div className="h-(--canvas-h) border-b border-border lg:border-r lg:border-b-0">
-            <FlowGraph key={def.id} definition={def} frame={frame} selectedId={selectedId} simulatedIds={simulatedIds} onSelect={select} />
+            <FlowGraph key={def.id} definition={def} frame={frame} selectedId={selectedId} badges={badges} onSelect={select} />
           </div>
 
           <div className="flex max-h-[600px] min-h-[360px] min-w-0 flex-col lg:h-(--canvas-h) lg:max-h-none">
             <TabBar value={tab} onChange={setTab} />
             <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-5" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
               {tab === "input" && (
-                <InputPanel text={inputText} error={parsed.ok ? null : parsed.error} onChange={(t) => {
-                  setInputText(t);
-                  clearRun();
-                }} />
+                <>
+                  {wf.upload && (
+                    <UploadBox
+                      hint={wf.upload.hint}
+                      accept={acceptFor(wf)}
+                      file={file}
+                      error={fileError}
+                      disabled={processing !== null}
+                      onFile={attachFile}
+                      onClear={() => loadSample(sampleId)}
+                    />
+                  )}
+                  <InputPanel
+                    text={inputText}
+                    error={parsed.ok ? null : parsed.error}
+                    readOnly={file !== null}
+                    onChange={(t) => {
+                      setInputText(t);
+                      clearRun();
+                    }}
+                  />
+                </>
               )}
               {tab === "step" && (
                 <StepPanel
@@ -209,6 +275,7 @@ export function Playground() {
                   done={frame.done}
                   selectedId={selectedId}
                   simulatedIds={simulatedIds}
+                  badges={badges}
                   onSelect={setSelectedId}
                 />
               )}
@@ -217,7 +284,9 @@ export function Playground() {
           </div>
         </div>
 
-        {result && frame.done && <ResultPanel result={result} labelOf={(id) => def.nodes.find((n) => n.id === id)?.label ?? id} />}
+        {result && frame.done && (
+          <ResultPanel result={result} fileStem={def.id} labelOf={(id) => def.nodes.find((n) => n.id === id)?.label ?? id} />
+        )}
       </div>
     </div>
   );
@@ -258,15 +327,28 @@ function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => void })
 
 // ── Panels ────────────────────────────────────────────────────────────────
 
-function InputPanel({ text, error, onChange }: { text: string; error: string | null; onChange: (t: string) => void }) {
+function InputPanel({
+  text,
+  error,
+  readOnly,
+  onChange,
+}: {
+  text: string;
+  error: string | null;
+  readOnly: boolean;
+  onChange: (t: string) => void;
+}) {
   return (
     <div>
       <label htmlFor="workflow-input" className="text-xs text-muted">
-        Edit the JSON and press Run. Changing it clears the last run.
+        {readOnly
+          ? "Built from your file. Remove the file to edit the JSON again."
+          : "Edit the JSON and press Run. Changing it clears the last run."}
       </label>
       <textarea
         id="workflow-input"
         value={text}
+        readOnly={readOnly}
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
         aria-invalid={error !== null}
@@ -292,6 +374,7 @@ function StepPanel({
   done,
   selectedId,
   simulatedIds,
+  badges,
   onSelect,
 }: {
   wf: (typeof workflows)[number];
@@ -300,6 +383,7 @@ function StepPanel({
   done: boolean;
   selectedId: string | null;
   simulatedIds: Set<string>;
+  badges: Record<string, string>;
   onSelect: (id: string | null) => void;
 }) {
   const node = wf.definition.nodes.find((n) => n.id === selectedId);
@@ -346,6 +430,12 @@ function StepPanel({
         <p className="rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
           <span className="text-accent">Simulated.</span> A deterministic mock stands in for the real service. No external
           system is contacted.
+        </p>
+      )}
+      {badges[node.id] === "on device" && (
+        <p className="rounded-md border border-border bg-bg px-3 py-2 text-xs text-muted">
+          <span className="text-accent">Runs on your device.</span> This step does real work in your browser. Your data is
+          not uploaded anywhere.
         </p>
       )}
 
@@ -396,7 +486,7 @@ function LogPanel({ events }: { events: RunResult["events"] }) {
   );
 }
 
-function ResultPanel({ result, labelOf }: { result: RunResult; labelOf: (id: string) => string }) {
+function ResultPanel({ result, fileStem, labelOf }: { result: RunResult; fileStem: string; labelOf: (id: string) => string }) {
   const failedAt = result.status === "failed" ? result.order.find((id) => result.nodes[id].status === "error") : undefined;
   return (
     <div className="border-t border-border p-4 sm:p-5">
@@ -423,12 +513,125 @@ function ResultPanel({ result, labelOf }: { result: RunResult; labelOf: (id: str
         </div>
       )}
       {result.output && (
-        <div className="mt-3">
-          <Json value={result.output} />
-        </div>
+        <>
+          <div className="mt-3">
+            <Json value={result.output} />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <button type="button" onClick={() => download(`${fileStem}-result.json`, `${pretty(result.output)}\n`, "application/json")} className="rounded-full border border-border px-4 py-1.5 transition hover:bg-surface-2">
+              Download JSON
+            </button>
+            <button type="button" onClick={() => download(`${fileStem}-result.csv`, toCsv(result.output!), "text/csv")} className="rounded-full border border-border px-4 py-1.5 transition hover:bg-surface-2">
+              Download CSV
+            </button>
+            <span className="text-xs text-muted">Generated in your browser.</span>
+          </div>
+        </>
       )}
     </div>
   );
+}
+
+function UploadBox({
+  hint,
+  accept,
+  file,
+  error,
+  disabled,
+  onFile,
+  onClear,
+}: {
+  hint: string;
+  accept: string;
+  file: File | null;
+  error: string | null;
+  disabled: boolean;
+  onFile: (f: File) => void;
+  onClear: () => void;
+}) {
+  const [over, setOver] = useState(false);
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault();
+    setOver(false);
+    const f = e.dataTransfer.files[0];
+    if (f && !disabled) onFile(f);
+  };
+  return (
+    <div className="mb-5">
+      {file ? (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/60 bg-accent-soft px-3 py-2.5 text-sm">
+          <span className="min-w-0 truncate">
+            {file.name} <span className="text-muted">· {formatBytes(file.size)}</span>
+          </span>
+          <button type="button" onClick={onClear} disabled={disabled} className="shrink-0 text-xs text-muted transition hover:text-fg disabled:opacity-40">
+            Remove file
+          </button>
+        </div>
+      ) : (
+        <label
+          onDragOver={(e) => {
+            e.preventDefault();
+            setOver(true);
+          }}
+          onDragLeave={() => setOver(false)}
+          onDrop={onDrop}
+          className={`block cursor-pointer rounded-lg border border-dashed px-4 py-4 text-center text-sm transition focus-within:ring-2 focus-within:ring-accent ${
+            over ? "border-accent bg-accent-soft" : "border-border hover:border-muted"
+          }`}
+        >
+          <span className="font-medium">Use your own file</span>
+          <span className="mt-1 block text-xs text-muted">Drop it here or choose a file. {hint}</span>
+          <input
+            type="file"
+            accept={accept}
+            className="sr-only"
+            disabled={disabled}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) onFile(f);
+            }}
+          />
+        </label>
+      )}
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-danger">
+          {error}
+        </p>
+      )}
+      <p className="mt-2 text-xs text-muted">
+        Read in this browser and never uploaded. Nothing is saved: it&apos;s gone when you reset or leave the page.
+      </p>
+    </div>
+  );
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function activeAdapters(wf: PlaygroundWorkflow, file: File, onProgress: (m: string, f?: number) => void): AdapterRegistry {
+  return wf.upload?.adapters ? wf.upload.adapters(file, onProgress) : wf.adapters;
+}
+
+/** How each integration step runs with the given adapters: simulated, or real work on the device. */
+function stepBadges(wf: PlaygroundWorkflow, adapters: AdapterRegistry): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const n of wf.definition.nodes) {
+    if (n.type !== "integration") continue;
+    const a = adapters[n.config.adapter];
+    if (a?.simulated) out[n.id] = "simulated";
+    else if (a?.runsLocally) out[n.id] = "on device";
+  }
+  return out;
+}
+
+const acceptByKind = { pdf: ".pdf,application/pdf", image: ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp", text: ".txt,text/plain", email: ".eml,message/rfc822" };
+const acceptFor = (wf: PlaygroundWorkflow) => (wf.upload?.kinds ?? []).map((k) => acceptByKind[k]).join(",");
+
+function download(name: string, content: string, type: string) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: name });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 // ── Small pieces ──────────────────────────────────────────────────────────

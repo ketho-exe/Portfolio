@@ -130,7 +130,8 @@ export async function runWorkflow(definition: unknown, input: unknown, options: 
 
     const startedAt = now();
     log("info", `${node.label} started`, id);
-    const result = await withTimeout(safeExecute(node, nodeInput, adapters), timeoutMs);
+    const limit = node.type === "integration" ? (node.config.timeoutMs ?? timeoutMs) : timeoutMs;
+    const result = await withTimeout(safeExecute(node, nodeInput, adapters), limit);
     const endedAt = now();
     const simulated = node.type === "integration" ? adapters[node.config.adapter].simulated : undefined;
 

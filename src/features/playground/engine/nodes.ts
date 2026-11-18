@@ -6,13 +6,16 @@ export type NodeResult =
   | { ok: false; error: string; details?: string[] };
 
 /**
- * Integration adapter. Browser adapters are deterministic mocks (`simulated: true`).
- * A real adapter would call a server endpoint; it must never hold credentials in the browser.
+ * Integration adapter. In the browser an adapter is either a deterministic mock (`simulated: true`)
+ * or real work that runs entirely on the visitor's device (`runsLocally: true`, e.g. PDF text or OCR)
+ * and makes no network requests beyond fetching this site's own assets.
+ * An adapter for an external service would call a server endpoint; it must never hold credentials in the browser.
  */
 export type Adapter = {
   id: string;
   label: string;
   simulated: boolean;
+  runsLocally?: boolean;
   run(input: Data, params: Data): NodeResult | Promise<NodeResult>;
 };
 export type AdapterRegistry = Record<string, Adapter>;

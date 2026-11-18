@@ -162,7 +162,7 @@ export const projects: Project[] = [
         "Built new apps and extended existing ones, working directly with business leadership to turn requirements into working tools, then maintained them based on feedback.",
       ],
       outcome: [
-        "Internal tools with confidential data, so there are no screenshots. The Automation Playground will include an anonymised, runnable recreation of the expense approval flow.",
+        "Internal tools with confidential data, so there are no screenshots. The Automation Playground includes an anonymised, runnable recreation of the expense approval flow.",
       ],
     },
   },
@@ -176,7 +176,7 @@ export const projects: Project[] = [
     categories: ["Automation", "Web application"],
     kind: "Personal project",
     status: "In progress",
-    technologies: ["Next.js", "TypeScript", "React Flow", "Zod", "Vitest"],
+    technologies: ["Next.js", "TypeScript", "React Flow", "Zod", "PDF.js", "Tesseract.js", "Vitest", "Playwright"],
     featured: false,
     links: { demo: "/playground/" },
     caseStudy: {
@@ -188,26 +188,28 @@ export const projects: Project[] = [
       ],
       goals: [
         "Make workflow logic visible and interactive: validation, conditions, branching and integration steps.",
-        "Run entirely in the browser with deterministic, clearly labelled simulations and no API keys.",
+        "Run entirely in the browser with no API keys or server. Where a step can't really run here, it's a deterministic, clearly labelled simulation.",
       ],
       solution: [
         "Workflows are stored as typed data and validated with schemas. A TypeScript engine executes nodes in dependency order and records each node's input, output and status. React Flow renders the graph and execution state.",
-        "Three workflows: expense approval (recreated from professional work), email routing with keyword rules, and invoice extraction with a mocked AI step that scores its confidence in each field.",
+        "Three workflows: expense approval (recreated from professional work), email routing with keyword rules, and invoice extraction that reads each field with rules and scores its confidence.",
       ],
       architecture: [
         "The engine is plain TypeScript with no UI dependencies: a Zod schema with seven node types (trigger, validate, condition, transform, classify, integration, output), a graph validator and an async runner. React Flow renders the graph; the UI replays the engine's event log to animate each step.",
-        "Integrations sit behind adapters. In the browser every adapter is a deterministic mock and is labelled as simulated. A real integration would run server-side behind the same interface.",
+        "Integrations sit behind adapters. In the browser, an adapter either does real work on the device (reading a document, extracting fields) or is a deterministic mock labelled as simulated (accounting, helpdesk). A real integration would run server-side behind the same interface.",
       ],
       implementation: [
         "Workflows are validated before they run: exactly one trigger, every edge pointing at a real step, branch labels on condition edges, no loops, and every step reachable. Field paths that could reach JavaScript object internals are rejected.",
         "Steps run in dependency order. A condition makes only its matching branch live, so the other branch is marked skipped, and two branches can rejoin. A failure stops the run safely, and each step has a timeout.",
+        "Visitors can run the invoice workflow on their own PDF or image, and email routing on their own .eml file. PDF.js reads the PDF's text layer; scans and images go through Tesseract.js OCR. Both libraries and the OCR model are served from this site and loaded only when needed. Nothing is uploaded or saved, and a Content-Security-Policy stops the page from sending data to any other server. Results download as JSON or CSV.",
       ],
       testing: [
         "Vitest covers graph validation, branching, joins, failures, timeouts and determinism. Every sample input in the playground stores its expected outcome, and the tests check it, so a sample's label can't drift from what it does.",
+        "Playwright runs real files through the built site: a PDF with a text layer, a scanned PDF, a PNG and an .eml file. The test fails if the page contacts any other host.",
       ],
       outcome: [
         "Three workflows are live in the playground, each with sample inputs covering success, branching and failure cases.",
-        "Limitations: no loops, parallel steps or custom code, by design. Everything is simulated, and nothing connects to real services. The AI step is a deterministic parser, not a model.",
+        "Limitations: no loops, parallel steps or custom code, by design. Accounting, approval and helpdesk steps are simulated, and nothing connects to real services. Field extraction uses rules, not an AI model, so it handles clearly labelled invoices best.",
       ],
     },
   },

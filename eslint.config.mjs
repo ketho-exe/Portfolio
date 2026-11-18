@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
+    "public/vendor/**", // copied third-party builds (scripts/copy-vendor.mjs)
     "build/**",
     "next-env.d.ts",
   ]),

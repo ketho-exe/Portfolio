@@ -23,6 +23,25 @@ export const viewport: Viewport = {
   ],
 };
 
+/**
+ * Content-Security-Policy (production only; dev needs eval and websockets for hot reload).
+ * connect-src 'self' means page scripts can only make requests to this site, so a visitor's document
+ * can't be sent anywhere else. Inline scripts/styles are needed by Next's static export and React Flow.
+ * Static export can't set headers, so this is a <meta> tag; frame-ancestors etc. belong in host headers.
+ */
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "worker-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 // Runs before paint to apply the saved or system theme without a flash. Dark is the fallback.
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t}catch(e){}})()`;
 
@@ -35,6 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {process.env.NODE_ENV === "production" && <meta httpEquiv="Content-Security-Policy" content={csp} />}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col">
