@@ -2,7 +2,7 @@
 
 Personal portfolio and digital studio: web development, software solutions, business automation and integrations.
 
-**Status:** early development. The site shell and page templates are built; owner content and the automation playground are not yet in place.
+**Status:** in development, not yet deployed. Site, case studies and About content are in place; the automation playground is next.
 
 ## Stack
 
@@ -50,6 +50,7 @@ Not deployed yet. `npm run build` produces a static site in `out/` that can be s
 
 ## Known limitations
 
-- Owner name, bio, experience, contact links and CV are placeholders.
-- All listed projects are planned. Case studies describe intent only.
+- Professional case studies are anonymised: no screenshots or code.
+- Personal projects (playground, dashboard, document processor) are planned. Their pages describe intent only.
+- After changing `generateStaticParams`, restart `npm run dev`, or new slugs 404 in dev.
 - No contact form yet (a static export has no server; this needs a small serverless endpoint later).

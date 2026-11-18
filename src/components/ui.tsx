@@ -5,19 +5,24 @@ export function Container({ className = "", ...props }: ComponentProps<"div">) {
   return <div className={`mx-auto w-full max-w-5xl px-4 sm:px-6 ${className}`} {...props} />;
 }
 
-type ButtonLinkProps = ComponentProps<typeof Link> & { variant?: "primary" | "secondary" };
+type Variant = "primary" | "secondary";
 
-export function ButtonLink({ variant = "primary", className = "", ...props }: ButtonLinkProps) {
+function buttonClass(variant: Variant, className: string) {
   const styles =
     variant === "primary"
       ? "bg-accent text-accent-fg hover:opacity-90"
       : "border border-border text-fg hover:border-muted hover:bg-surface";
-  return (
-    <Link
-      className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-medium transition ${styles} ${className}`}
-      {...props}
-    />
-  );
+  return `inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-medium transition ${styles} ${className}`;
+}
+
+/** For in-site routes. */
+export function ButtonLink({ variant = "primary", className = "", ...props }: ComponentProps<typeof Link> & { variant?: Variant }) {
+  return <Link className={buttonClass(variant, className)} {...props} />;
+}
+
+/** For files, mailto: and external URLs, which shouldn't go through client-side routing. */
+export function ButtonAnchor({ variant = "primary", className = "", ...props }: ComponentProps<"a"> & { variant?: Variant }) {
+  return <a className={buttonClass(variant, className)} {...props} />;
 }
 
 export function Tag({ children }: { children: ReactNode }) {

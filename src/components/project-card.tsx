@@ -2,20 +2,31 @@ import Link from "next/link";
 import type { Project } from "@/content/projects";
 import { Tag } from "./ui";
 
+const dotColour: Record<Project["status"], string> = {
+  Live: "bg-accent",
+  Delivered: "bg-accent",
+  "In progress": "bg-amber-500",
+  Planned: "bg-muted",
+};
+
 export function StatusBadge({ status }: { status: Project["status"] }) {
-  const dot = status === "Live" ? "bg-accent" : status === "In progress" ? "bg-amber-500" : "bg-muted";
   return (
     <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-xs text-muted">
-      <span aria-hidden="true" className={`size-1.5 rounded-full ${dot}`} />
+      <span aria-hidden="true" className={`size-1.5 rounded-full ${dotColour[status]}`} />
       {status}
     </span>
   );
 }
 
+/** "Professional work · UPL Group · 2026" */
+export function projectByline(project: Project) {
+  return [project.kind, project.organisation, project.period].filter(Boolean).join(" · ");
+}
+
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <article className="group relative flex flex-col rounded-xl border border-border bg-surface p-5 transition hover:border-muted/60">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <p className="font-mono text-xs text-muted">{project.categories.join(" · ")}</p>
         <StatusBadge status={project.status} />
       </div>
@@ -31,7 +42,7 @@ export function ProjectCard({ project }: { project: Project }) {
         ))}
       </div>
       <p className="mt-4 text-xs text-muted">
-        {project.kind}
+        {projectByline(project)}
         <span aria-hidden="true" className="ml-1 inline-block transition group-hover:translate-x-0.5 group-hover:text-accent">
           →
         </span>

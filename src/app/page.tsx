@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PipelineMotif } from "@/components/pipeline-motif";
 import { ProjectCard } from "@/components/project-card";
-import { ButtonLink, Container, Eyebrow, Placeholder, SectionHeading } from "@/components/ui";
+import { ButtonAnchor, ButtonLink, Container, Eyebrow, SectionHeading } from "@/components/ui";
 import { projects } from "@/content/projects";
 import { site } from "@/content/site";
 import { skillGroups } from "@/content/skills";
@@ -37,23 +37,18 @@ export default function Home() {
             I design, build and automate software for real business problems.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted text-pretty">
-            From understanding the process to shipping a tested application — web development, integrations and
-            workflow automation.
+            I&apos;m {site.firstName}, a {site.role.toLowerCase()}. Since 2024 I&apos;ve built internal business
+            applications, workflow automation and integrations for an accounting firm and a multi-business group.
           </p>
-          {site.nameIsPlaceholder && (
-            <div className="mt-6 max-w-xl">
-              <Placeholder>Owner name and a one-line introduction (src/content/site.ts)</Placeholder>
-            </div>
-          )}
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/projects/">View projects</ButtonLink>
             <ButtonLink href="/contact/" variant="secondary">
               Get in touch
             </ButtonLink>
             {site.cvUrl && (
-              <ButtonLink href={site.cvUrl} variant="secondary">
+              <ButtonAnchor href={site.cvUrl} variant="secondary" download>
                 Download CV
-              </ButtonLink>
+              </ButtonAnchor>
             )}
           </div>
           <div className="mt-16 max-w-2xl">
@@ -84,7 +79,7 @@ export default function Home() {
               All projects →
             </Link>
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
             {featured.map((p) => (
               <ProjectCard key={p.slug} project={p} />
             ))}
@@ -95,7 +90,7 @@ export default function Home() {
       <section className="border-t border-border/60 py-20">
         <Container>
           <SectionHeading eyebrow="Toolkit" title="Technologies I work with" />
-          <dl className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {skillGroups.map((g) => (
               <div key={g.area}>
                 <dt className="font-mono text-xs text-muted">{g.area}</dt>
@@ -117,7 +112,7 @@ export default function Home() {
               Looking for a developer who can build and automate?
             </h2>
             <p className="mt-3 max-w-xl text-muted">
-              I&apos;m open to developer roles in web, automation and integration work.
+              I&apos;m looking for junior software, application and automation developer roles.
             </p>
             <div className="mt-8">
               <ButtonLink href="/contact/">Contact details</ButtonLink>

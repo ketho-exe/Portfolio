@@ -1,8 +1,16 @@
-// Skills as listed in the project brief. TODO(owner): confirm each item and add any missing
-// technologies (e.g. Python) only at an accurate level. No proficiency percentages.
+// From the owner's skills list and CV. No proficiency percentages.
+// Python is basic familiarity only: keep it labelled that way.
 export const skillGroups = [
-  { area: "Web development", items: ["React", "Next.js", "TypeScript", "Tailwind CSS"] },
-  { area: "Data", items: ["PostgreSQL", "Supabase", "SQL"] },
-  { area: "Automation & integration", items: ["Zapier", "Workflow design", "Webhooks", "REST APIs", "Xero integrations"] },
-  { area: "Tooling", items: ["GitHub", "Vercel", "AI-assisted development"] },
+  { area: "Web development", items: ["Next.js", "React", "TypeScript", "JavaScript", "HTML & CSS"] },
+  {
+    area: "Backend & data",
+    items: ["Supabase", "PostgreSQL", "SQL", "Relational data & imports", "Azure Functions (Node.js)"],
+  },
+  {
+    area: "Automation & integration",
+    items: ["Zapier", "REST APIs & webhooks", "Xero", "QuickBooks Online", "SharePoint Online", "OCR document processing"],
+  },
+  { area: "Low-code", items: ["Glide", "Shopify", "Internal business applications"] },
+  { area: "Scripting", items: ["PowerShell", "Excel VBA", "Python (basic)"] },
+  { area: "AI & tooling", items: ["Claude", "ChatGPT", "OpenAI API", "Vercel", "Git & GitHub"] },
 ];

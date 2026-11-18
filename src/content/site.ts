@@ -1,11 +1,11 @@
 /**
- * Site identity and contact details.
+ * Site identity and contact details, as supplied by the owner (vault: 01 Strategy/Owner Profile.md).
  * `null` means "not supplied yet": the UI renders a visible <Placeholder> instead.
  * Never fill these with invented values — see AGENTS.md.
  */
 export type SiteConfig = {
   name: string;
-  nameIsPlaceholder: boolean;
+  firstName: string;
   role: string;
   tagline: string;
   description: string;
@@ -16,16 +16,17 @@ export type SiteConfig = {
 };
 
 export const site: SiteConfig = {
-  name: "Your Name",
-  nameIsPlaceholder: true,
-  role: "Developer",
+  name: "Szymon Klejny",
+  firstName: "Szymon",
+  role: "Software Developer & Automation Specialist",
   tagline: "Web development · Software solutions · Business automation · Integrations",
   description:
-    "Portfolio of a developer who designs, builds, integrates and automates software for practical business problems.",
-  email: null,
-  linkedin: null,
-  github: null,
-  cvUrl: null,
+    "Szymon Klejny is a software developer building business applications, workflow automation and integrations with Next.js, TypeScript, Supabase, Zapier and Glide.",
+  email: "sklejny@gmail.com",
+  // Behind LinkedIn's sign-in wall, so it can't be checked automatically. URL as supplied by the owner.
+  linkedin: "https://www.linkedin.com/in/szymon-klejny-732a58296/",
+  github: "https://github.com/ketho-exe",
+  cvUrl: "/cv/szymon-klejny-cv.pdf",
 };
 
 export const nav = [

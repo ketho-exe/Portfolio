@@ -4,15 +4,20 @@ import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Email, LinkedIn, GitHub and CV.",
+  description: `Contact ${site.name}: email, LinkedIn, GitHub and CV.`,
 };
+
+/** "https://github.com/ketho-exe" → "github.com/ketho-exe" */
+function displayUrl(url: string) {
+  return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+}
 
 export default function ContactPage() {
   const channels = [
-    { label: "Email", value: site.email, href: site.email ? `mailto:${site.email}` : null },
-    { label: "LinkedIn", value: site.linkedin, href: site.linkedin },
-    { label: "GitHub", value: site.github, href: site.github },
-    { label: "CV", value: site.cvUrl ? "Download PDF" : null, href: site.cvUrl },
+    { label: "Email", value: site.email, href: site.email && `mailto:${site.email}`, external: false },
+    { label: "LinkedIn", value: site.linkedin && displayUrl(site.linkedin), href: site.linkedin, external: true },
+    { label: "GitHub", value: site.github && displayUrl(site.github), href: site.github, external: true },
+    { label: "CV", value: site.cvUrl && "Download PDF", href: site.cvUrl, external: false },
   ];
 
   return (
@@ -22,8 +27,8 @@ export default function ContactPage() {
         Let&apos;s talk.
       </h1>
       <p className="mt-4 max-w-xl text-muted text-pretty">
-        I&apos;m interested in developer roles across web applications, automation and integrations. Email is the
-        quickest way to reach me.
+        I&apos;m looking for junior software, application and automation developer roles. Email is the quickest way to
+        reach me.
       </p>
 
       <ul className="mt-12 max-w-2xl divide-y divide-border border-y border-border">
@@ -31,8 +36,14 @@ export default function ContactPage() {
           <li key={c.label} className="grid gap-2 py-5 sm:grid-cols-[140px_1fr] sm:items-center">
             <span className="font-mono text-xs text-muted">{c.label}</span>
             {c.href && c.value ? (
-              <a href={c.href} className="break-all text-fg transition hover:text-accent">
+              <a
+                href={c.href}
+                className="break-all text-fg transition hover:text-accent"
+                {...(c.external && { target: "_blank", rel: "noopener noreferrer" })}
+                {...(c.label === "CV" && { download: true })}
+              >
                 {c.value}
+                {c.external && <span aria-hidden="true"> ↗</span>}
               </a>
             ) : (
               <Placeholder>{c.label} not supplied yet (src/content/site.ts)</Placeholder>
