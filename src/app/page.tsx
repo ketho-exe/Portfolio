@@ -84,7 +84,9 @@ export default function Home() {
                 every step received and produced. Simulated, with synthetic data.
               </p>
             </div>
-            <ButtonLink href="/playground/">Open the playground</ButtonLink>
+            <ButtonLink href="/playground/" prefetch={false}>
+              Open the playground
+            </ButtonLink>
           </div>
         </Container>
       </section>

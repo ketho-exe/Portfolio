@@ -35,6 +35,7 @@ Personal portfolio and digital studio. Full brief: `vault/01 Strategy/Project Br
 
 - Next.js 16 App Router, TypeScript, Tailwind CSS v4. **Static export** (`output: "export"`), so: no server actions, no request-time route handlers, no middleware/proxy, no ISR. Cache Components is off because it is incompatible with export.
 - Dynamic routes need `generateStaticParams` and `dynamicParams = false`.
+- Metadata routes (`robots.ts`, `sitemap.ts`) need `export const dynamic = "force-static"`. Absolute URLs come from `site.url` (null until the domain is known). Links to `/playground/` use `prefetch={false}` so its large bundle isn't fetched from every page.
 - Content lives in `src/content/` as typed data. Pages in `src/app/`. Shared UI in `src/components/ui.tsx`.
 - Theme: tokens in `src/app/globals.css` (`:root` = light, `[data-theme="dark"]` = dark). Dark is the default; an inline script in `layout.tsx` applies the saved or system theme before paint. Use token classes (`bg-bg`, `text-muted`, `border-border`, `text-accent`...), not raw colours.
 - Playground engine: `src/features/playground/engine/`. Pure TS, no React. Zod schema → `validateWorkflow` → `runWorkflow` (async, never throws, per-step timeout). Node types: trigger, validate, condition, transform, classify, integration (adapter), output. Adapters are injected; browser adapters must be `simulated: true`. Every engine change needs a Vitest test.
@@ -42,4 +43,4 @@ Personal portfolio and digital studio. Full brief: `vault/01 Strategy/Project Br
 
 ## Checks
 
-`npm run check` = lint + typecheck + Vitest + production build. Run it before every commit. Review mobile (375px) and desktop in both themes before calling UI work done.
+`npm run check` = lint + typecheck + Vitest + production build. Run it before every commit. For UI or routing changes also run `npm run e2e` (Playwright + axe on the built site), or `npm run check:all` for both. Review mobile (375px) and desktop in both themes before calling UI work done.

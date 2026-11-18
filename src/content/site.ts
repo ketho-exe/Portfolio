@@ -13,6 +13,8 @@ export type SiteConfig = {
   linkedin: string | null;
   github: string | null;
   cvUrl: string | null;
+  /** Production origin, e.g. "https://example.com". Unknown until hosting is chosen; sitemap and absolute share URLs wait for it. */
+  url: string | null;
 };
 
 export const site: SiteConfig = {
@@ -27,6 +29,7 @@ export const site: SiteConfig = {
   linkedin: "https://www.linkedin.com/in/szymon-klejny-732a58296/",
   github: "https://github.com/ketho-exe",
   cvUrl: "/cv/szymon-klejny-cv.pdf",
+  url: null,
 };
 
 export const nav = [

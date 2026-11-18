@@ -14,6 +14,8 @@ export function NavLinks() {
           <li key={href}>
             <Link
               href={href}
+              // The playground bundle (React Flow, Zod) is large; don't prefetch it from every page.
+              prefetch={href === "/playground/" ? false : undefined}
               aria-current={active ? "page" : undefined}
               className={`rounded-full px-2 py-1.5 sm:px-3 transition hover:text-fg ${active ? "text-fg" : "text-muted"}`}
             >

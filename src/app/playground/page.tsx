@@ -26,15 +26,15 @@ export default function PlaygroundPage() {
 
       <p className="mt-6 max-w-2xl text-sm text-muted text-pretty">
         Expense approval is recreated from{" "}
-        <Link href="/projects/glide-apps-xero-integration/" className="text-fg underline-offset-4 hover:underline">
+        <Link href="/projects/glide-apps-xero-integration/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
           professional work on a Glide–Xero approval flow
         </Link>
         , and invoice extraction from{" "}
-        <Link href="/projects/document-intake-pipeline/" className="text-fg underline-offset-4 hover:underline">
+        <Link href="/projects/document-intake-pipeline/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
           OCR document intake work
         </Link>
         . Email routing is illustrative. All data is synthetic. How it works:{" "}
-        <Link href="/projects/automation-playground/" className="text-fg underline-offset-4 hover:underline">
+        <Link href="/projects/automation-playground/" className="text-fg underline decoration-muted underline-offset-4 transition hover:decoration-fg">
           case study
         </Link>
         .

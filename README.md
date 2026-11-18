@@ -27,6 +27,8 @@ npm run dev      # http://localhost:3000
 | `npm run typecheck` | Generate route types and run `tsc` |
 | `npm run test` | Vitest unit tests (engine, workflows, UI logic) |
 | `npm run check` | Lint + typecheck + tests + build (run before committing) |
+| `npm run e2e` | Playwright journeys + axe accessibility checks against `out/` (build first; uses installed Edge locally) |
+| `npm run check:all` | `check` + `e2e` |
 
 ## Structure
 
@@ -40,6 +42,8 @@ src/
     adapters/   simulated integrations (finance, helpdesk, documents)
     workflows/  workflow definitions + sample inputs (expected outcomes tested)
     ui/         React Flow graph, replay, inspector
+e2e/            Playwright specs (pages, navigation, theme, playground, axe)
+scripts/        serve-out.mjs (static server for e2e), fix-segment-files.mjs (postbuild, see below)
 ```
 
 ## Content
@@ -60,3 +64,11 @@ Not deployed yet. `npm run build` produces a static site in `out/` that can be s
 - Personal projects (playground, dashboard, document processor) are planned. Their pages describe intent only.
 - After changing `generateStaticParams`, restart `npm run dev`, or new slugs 404 in dev.
 - No contact form yet (a static export has no server; this needs a small serverless endpoint later).
+
+## Known issue: Windows builds
+
+Next.js 16.4 writes prefetch payloads with backslash paths on Windows (`about/__next.about/__PAGE__.txt` instead of `about/__next.about.__PAGE__.txt`), so client prefetches 404. `postbuild` runs `scripts/fix-segment-files.mjs` to flatten them; it does nothing on Linux/macOS builds. Remove it once Next fixes the export.
+
+## Before launch
+
+Set `site.url` in `src/content/site.ts` to the production origin. Until then the sitemap is empty and share-image URLs fall back to localhost.

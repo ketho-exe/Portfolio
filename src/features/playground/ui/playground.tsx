@@ -407,6 +407,13 @@ function ResultPanel({ result, labelOf }: { result: RunResult; labelOf: (id: str
           <span className="text-danger">Stopped at “{labelOf(failedAt)}”:</span> {result.error}
         </p>
       )}
+      {failedAt && result.nodes[failedAt].details?.length ? (
+        <ul className="mt-1 list-disc pl-5 text-sm text-muted">
+          {result.nodes[failedAt].details!.map((d) => (
+            <li key={d}>{d}</li>
+          ))}
+        </ul>
+      ) : null}
       {result.status === "invalid" && (
         <div className="mt-2 text-sm">
           <p className="text-danger">The run did not start:</p>
