@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { runWorkflow, type Data, type RunResult } from "../engine";
 import { workflows } from "../workflows";
+import { canvasHeight, layoutWorkflow } from "./layout";
 import { eventDelay, replayFrame, type UiStatus } from "./replay";
 import { statusGlyph, typeLabel } from "./step-node";
 
@@ -49,6 +50,7 @@ export function Playground() {
   }, [inputText]);
 
   const frame = replayFrame(def, result, cursor);
+  const graphHeight = useMemo(() => canvasHeight(layoutWorkflow(def)), [def]);
   const running = result !== null && !frame.done;
   const simulatedIds = useMemo(
     () =>
@@ -185,12 +187,12 @@ export function Playground() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_380px]">
-          <div className="h-[540px] border-b border-border sm:h-[620px] lg:border-r lg:border-b-0">
-            <FlowGraph definition={def} frame={frame} selectedId={selectedId} simulatedIds={simulatedIds} onSelect={select} />
+        <div className="grid lg:grid-cols-[1fr_380px]" style={{ "--canvas-h": `${graphHeight}px` } as CSSProperties}>
+          <div className="h-(--canvas-h) border-b border-border lg:border-r lg:border-b-0">
+            <FlowGraph key={def.id} definition={def} frame={frame} selectedId={selectedId} simulatedIds={simulatedIds} onSelect={select} />
           </div>
 
-          <div className="flex max-h-[600px] min-h-[360px] min-w-0 flex-col lg:h-[620px] lg:max-h-none">
+          <div className="flex max-h-[600px] min-h-[360px] min-w-0 flex-col lg:h-(--canvas-h) lg:max-h-none">
             <TabBar value={tab} onChange={setTab} />
             <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-5" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
               {tab === "input" && (

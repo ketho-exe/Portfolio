@@ -192,7 +192,7 @@ export const projects: Project[] = [
       ],
       solution: [
         "Workflows are stored as typed data and validated with schemas. A TypeScript engine executes nodes in dependency order and records each node's input, output and status. React Flow renders the graph and execution state.",
-        "First workflows: an expense approval flow recreated from professional work, email routing, and document processing with mocked AI.",
+        "Three workflows: expense approval (recreated from professional work), email routing with keyword rules, and invoice extraction with a mocked AI step that scores its confidence in each field.",
       ],
       architecture: [
         "The engine is plain TypeScript with no UI dependencies: a Zod schema with seven node types (trigger, validate, condition, transform, classify, integration, output), a graph validator and an async runner. React Flow renders the graph; the UI replays the engine's event log to animate each step.",
@@ -206,8 +206,8 @@ export const projects: Project[] = [
         "Vitest covers graph validation, branching, joins, failures, timeouts and determinism. Every sample input in the playground stores its expected outcome, and the tests check it, so a sample's label can't drift from what it does.",
       ],
       outcome: [
-        "The expense approval workflow is live in the playground. Email routing and document processing workflows are next.",
-        "Limitations: no loops, parallel steps or custom code, by design. Everything is simulated, and nothing connects to real services.",
+        "Three workflows are live in the playground, each with sample inputs covering success, branching and failure cases.",
+        "Limitations: no loops, parallel steps or custom code, by design. Everything is simulated, and nothing connects to real services. The AI step is a deterministic parser, not a model.",
       ],
     },
   },

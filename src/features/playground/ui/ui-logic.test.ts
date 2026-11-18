@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { runWorkflow } from "../engine";
 import { expenseApproval } from "../workflows/expense-approval";
-import { layoutWorkflow, NODE_HEIGHT, NODE_WIDTH } from "./layout";
+import { workflows } from "../workflows";
+import { canvasHeight, layoutWorkflow, NODE_HEIGHT, NODE_WIDTH } from "./layout";
 import { replayFrame } from "./replay";
 
 const def = expenseApproval.definition;
@@ -31,6 +32,22 @@ describe("layoutWorkflow", () => {
         expect(overlap).toBe(false);
       }
     }
+  });
+});
+
+describe("canvasHeight", () => {
+  it("grows with the graph but stays within bounds", () => {
+    const heights = workflows.map((w) => canvasHeight(layoutWorkflow(w.definition)));
+    for (const h of heights) {
+      expect(h).toBeGreaterThanOrEqual(480);
+      expect(h).toBeLessThanOrEqual(960);
+    }
+    expect(canvasHeight({})).toBe(480);
+    expect(canvasHeight({ a: { x: 0, y: 0 }, b: { x: 0, y: 5000 } })).toBe(960);
+    // Taller graph → taller canvas.
+    expect(canvasHeight({ a: { x: 0, y: 0 }, b: { x: 0, y: 900 } })).toBeGreaterThan(
+      canvasHeight({ a: { x: 0, y: 0 }, b: { x: 0, y: 600 } }),
+    );
   });
 });
 

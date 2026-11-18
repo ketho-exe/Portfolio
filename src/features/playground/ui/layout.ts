@@ -43,3 +43,13 @@ export function layoutWorkflow(def: Pick<WorkflowInput, "nodes" | "edges">): Rec
   }
   return positions;
 }
+
+/**
+ * Canvas height that shows the graph at roughly 85% scale, so long workflows stay readable
+ * instead of shrinking to fit a fixed box. Clamped to keep short and very long graphs sensible.
+ */
+export function canvasHeight(positions: Record<string, Position>): number {
+  const ys = Object.values(positions).map((p) => p.y);
+  const graph = ys.length ? Math.max(...ys) - Math.min(...ys) + NODE_HEIGHT : 0;
+  return Math.min(960, Math.max(480, Math.round(graph * 0.85) + 48));
+}

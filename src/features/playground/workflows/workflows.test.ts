@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { simulatedReference } from "../adapters/finance";
+import { simulatedReference } from "../adapters/reference";
 import { runWorkflow, validateWorkflow } from "../engine";
 import { expenseApproval } from "./expense-approval";
 import { workflows } from "./index";
