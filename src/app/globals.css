@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Light theme tokens. Dark is the default (see layout theme script). */
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --surface-2: #edede8;
+  --border: #d9d9d2;
+  --fg: #141413;
+  --muted: #595954;
+  --accent: #0a7444;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(10 116 68 / 0.09);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0b0c0e;
+  --surface: #121316;
+  --surface-2: #191a1e;
+  --border: #25272c;
+  --fg: #ecece9;
+  --muted: #9b9c98;
+  --accent: #6ee7a8;
+  --accent-fg: #052211;
+  --accent-soft: rgb(110 231 168 / 0.08);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Hero pipeline motif: nodes light up in sequence, a pulse travels each connector. */
+@keyframes node-active {
+  0%, 100% { border-color: var(--border); color: var(--muted); background: var(--surface); }
+  8%, 22% { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+  30% { border-color: var(--border); color: var(--muted); background: var(--surface); }
+}
+
+@keyframes wire-pulse {
+  0% { transform: translateX(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  25%, 100% { transform: translateX(100%); opacity: 0; }
+}
+
+.motif-node {
+  animation: node-active 6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 1.2s);
+}
+
+.motif-wire::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: wire-pulse 6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 1.2s + 0.6s);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
