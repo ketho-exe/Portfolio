@@ -44,7 +44,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
           <div className="mt-6 flex gap-4 text-sm">
             {project.links.demo && (
               <a href={project.links.demo} className="text-accent hover:underline">
-                Live demo ↗
+                {project.links.demo.startsWith("/") ? "Try the demo →" : "Live demo ↗"}
               </a>
             )}
             {project.links.source && (

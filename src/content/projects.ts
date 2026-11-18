@@ -175,9 +175,10 @@ export const projects: Project[] = [
       "Interactive business workflows you can inspect and run step by step, powered by a small typed execution engine in the browser.",
     categories: ["Automation", "Web application"],
     kind: "Personal project",
-    status: "Planned",
-    technologies: ["Next.js", "TypeScript", "React Flow", "Zod"],
+    status: "In progress",
+    technologies: ["Next.js", "TypeScript", "React Flow", "Zod", "Vitest"],
     featured: false,
+    links: { demo: "/playground/" },
     caseStudy: {
       overview: [
         "A focused environment for exploring example business workflows: select one, edit the sample input, run it and inspect what every step received and produced.",
@@ -192,6 +193,21 @@ export const projects: Project[] = [
       solution: [
         "Workflows are stored as typed data and validated with schemas. A TypeScript engine executes nodes in dependency order and records each node's input, output and status. React Flow renders the graph and execution state.",
         "First workflows: an expense approval flow recreated from professional work, email routing, and document processing with mocked AI.",
+      ],
+      architecture: [
+        "The engine is plain TypeScript with no UI dependencies: a Zod schema with seven node types (trigger, validate, condition, transform, classify, integration, output), a graph validator and an async runner. React Flow renders the graph; the UI replays the engine's event log to animate each step.",
+        "Integrations sit behind adapters. In the browser every adapter is a deterministic mock and is labelled as simulated. A real integration would run server-side behind the same interface.",
+      ],
+      implementation: [
+        "Workflows are validated before they run: exactly one trigger, every edge pointing at a real step, branch labels on condition edges, no loops, and every step reachable. Field paths that could reach JavaScript object internals are rejected.",
+        "Steps run in dependency order. A condition makes only its matching branch live, so the other branch is marked skipped, and two branches can rejoin. A failure stops the run safely, and each step has a timeout.",
+      ],
+      testing: [
+        "Vitest covers graph validation, branching, joins, failures, timeouts and determinism. Every sample input in the playground stores its expected outcome, and the tests check it, so a sample's label can't drift from what it does.",
+      ],
+      outcome: [
+        "The expense approval workflow is live in the playground. Email routing and document processing workflows are next.",
+        "Limitations: no loops, parallel steps or custom code, by design. Everything is simulated, and nothing connects to real services.",
       ],
     },
   },

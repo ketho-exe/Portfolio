@@ -38,6 +38,7 @@ Personal portfolio and digital studio. Full brief: `vault/01 Strategy/Project Br
 - Content lives in `src/content/` as typed data. Pages in `src/app/`. Shared UI in `src/components/ui.tsx`.
 - Theme: tokens in `src/app/globals.css` (`:root` = light, `[data-theme="dark"]` = dark). Dark is the default; an inline script in `layout.tsx` applies the saved or system theme before paint. Use token classes (`bg-bg`, `text-muted`, `border-border`, `text-accent`...), not raw colours.
 - Playground engine: `src/features/playground/engine/`. Pure TS, no React. Zod schema → `validateWorkflow` → `runWorkflow` (async, never throws, per-step timeout). Node types: trigger, validate, condition, transform, classify, integration (adapter), output. Adapters are injected; browser adapters must be `simulated: true`. Every engine change needs a Vitest test.
+- Playground UI: `src/features/playground/ui/` (React Flow 13, read-only graph that replays the engine's event log). Workflows and samples: `src/features/playground/workflows/`; each sample's `expected` outcome is asserted in tests.
 
 ## Checks
 

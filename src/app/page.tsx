@@ -73,6 +73,24 @@ export default function Home() {
 
       <section className="border-t border-border/60 py-20">
         <Container>
+          <div className="grid gap-8 rounded-2xl border border-border bg-surface p-6 sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="max-w-xl">
+              <Eyebrow>Try it</Eyebrow>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                Run an approval workflow in your browser
+              </h2>
+              <p className="mt-3 text-muted text-pretty">
+                A recreation of real expense-approval automation. Pick a sample, watch each step execute, and inspect what
+                every step received and produced. Simulated, with synthetic data.
+              </p>
+            </div>
+            <ButtonLink href="/playground/">Open the playground</ButtonLink>
+          </div>
+        </Container>
+      </section>
+
+      <section className="border-t border-border/60 py-20">
+        <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionHeading eyebrow="Selected work" title="Projects" />
             <Link href="/projects/" className="text-sm text-muted transition hover:text-fg">

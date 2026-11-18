@@ -65,7 +65,7 @@ export const expenseApproval: PlaygroundWorkflow = {
       {
         id: "policy",
         type: "condition",
-        label: "Within auto-approval policy?",
+        label: "Auto-approval policy?",
         description: "Small, receipted, non-entertainment spend is approved automatically.",
         config: {
           match: "all",

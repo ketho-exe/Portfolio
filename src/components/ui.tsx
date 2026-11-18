@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
-export function Container({ className = "", ...props }: ComponentProps<"div">) {
-  return <div className={`mx-auto w-full max-w-5xl px-4 sm:px-6 ${className}`} {...props} />;
+export function Container({ className = "", wide = false, ...props }: ComponentProps<"div"> & { wide?: boolean }) {
+  return <div className={`mx-auto w-full ${wide ? "max-w-6xl" : "max-w-5xl"} px-4 sm:px-6 ${className}`} {...props} />;
 }
 
 type Variant = "primary" | "secondary";

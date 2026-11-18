@@ -13,6 +13,8 @@
   --accent: #0a7444;
   --accent-fg: #ffffff;
   --accent-soft: rgb(10 116 68 / 0.09);
+  --danger: #b42318;
+  --danger-soft: rgb(180 35 24 / 0.08);
   color-scheme: light;
 }
 
@@ -26,6 +28,8 @@
   --accent: #6ee7a8;
   --accent-fg: #052211;
   --accent-soft: rgb(110 231 168 / 0.08);
+  --danger: #f97066;
+  --danger-soft: rgb(249 112 102 / 0.1);
   color-scheme: dark;
 }
 
@@ -39,6 +43,8 @@
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -92,6 +98,38 @@ body {
   animation: wire-pulse 6s ease-in-out infinite;
   animation-delay: calc(var(--i) * 1.2s + 0.6s);
   opacity: 0;
+}
+
+/* React Flow: map its variables onto our tokens. Its own styles live in @layer xyflow, so these win. */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: var(--border);
+  --xy-edge-stroke-selected: var(--accent);
+  --xy-edge-label-background-color: var(--bg);
+  --xy-edge-label-color: var(--muted);
+  --xy-handle-background-color: var(--muted);
+  --xy-handle-border-color: var(--bg);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--surface-2);
+  --xy-controls-button-color: var(--fg);
+  --xy-controls-button-color-hover: var(--fg);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-box-shadow: none;
+  --xy-attribution-background-color: transparent;
+}
+.react-flow__attribution a {
+  color: var(--muted);
+}
+.react-flow__edge.taken .react-flow__edge-path {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.react-flow__edge.not-taken .react-flow__edge-path {
+  stroke-dasharray: 4 4;
+  opacity: 0.55;
+}
+.react-flow__edge-textbg {
+  fill: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {

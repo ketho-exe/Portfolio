@@ -8,9 +8,22 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-border/60 bg-bg/80 backdrop-blur">
       <Container className="flex h-14 items-center justify-between gap-2">
-        <Link href="/" className="flex shrink-0 items-center gap-2 font-medium tracking-tight whitespace-nowrap">
+        <Link
+          href="/"
+          aria-label={`${site.name}, home`}
+          className="flex shrink-0 items-center gap-2 font-medium tracking-tight whitespace-nowrap"
+        >
           <span aria-hidden="true" className="size-2 rounded-full bg-accent" />
-          {site.name}
+          {/* Monogram on phones so four nav links fit at 375px. */}
+          <span aria-hidden="true" className="sm:hidden">
+            {site.name
+              .split(" ")
+              .map((w) => w[0])
+              .join("")}
+          </span>
+          <span aria-hidden="true" className="hidden sm:inline">
+            {site.name}
+          </span>
         </Link>
         <nav aria-label="Main" className="flex items-center gap-1">
           <NavLinks />
