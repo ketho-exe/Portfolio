@@ -37,8 +37,8 @@ Personal portfolio and digital studio. Full brief: `vault/01 Strategy/Project Br
 - Dynamic routes need `generateStaticParams` and `dynamicParams = false`.
 - Content lives in `src/content/` as typed data. Pages in `src/app/`. Shared UI in `src/components/ui.tsx`.
 - Theme: tokens in `src/app/globals.css` (`:root` = light, `[data-theme="dark"]` = dark). Dark is the default; an inline script in `layout.tsx` applies the saved or system theme before paint. Use token classes (`bg-bg`, `text-muted`, `border-border`, `text-accent`...), not raw colours.
-- Planned: `src/features/playground/` with a pure TypeScript workflow engine (unit-tested with Vitest) and React Flow UI.
+- Playground engine: `src/features/playground/engine/`. Pure TS, no React. Zod schema → `validateWorkflow` → `runWorkflow` (async, never throws, per-step timeout). Node types: trigger, validate, condition, transform, classify, integration (adapter), output. Adapters are injected; browser adapters must be `simulated: true`. Every engine change needs a Vitest test.
 
 ## Checks
 
-`npm run check` = lint + typecheck + production build. Run it before every commit. Review mobile (375px) and desktop in both themes before calling UI work done.
+`npm run check` = lint + typecheck + Vitest + production build. Run it before every commit. Review mobile (375px) and desktop in both themes before calling UI work done.

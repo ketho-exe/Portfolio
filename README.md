@@ -25,7 +25,8 @@ npm run dev      # http://localhost:3000
 | `npm run build` | Static export to `out/` |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Generate route types and run `tsc` |
-| `npm run check` | Lint + typecheck + build (run before committing) |
+| `npm run test` | Vitest unit tests (workflow engine) |
+| `npm run check` | Lint + typecheck + tests + build (run before committing) |
 
 ## Structure
 
@@ -33,7 +34,8 @@ npm run dev      # http://localhost:3000
 src/
   app/          routes: /, /projects, /projects/[slug], /about, /contact
   components/   shared UI (ui.tsx), header/footer, project card
-  content/      site.ts (identity, contact), projects.ts (case studies), skills.ts
+  content/      site.ts (identity, contact), projects.ts (case studies), skills.ts, experience.ts
+  features/playground/engine/   workflow schema, graph validation, executor (pure TS, tested)
 ```
 
 ## Content
