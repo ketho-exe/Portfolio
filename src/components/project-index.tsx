@@ -93,7 +93,7 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
                   ))}
                 </span>
               </span>
-              <span className="flex flex-[0_0_220px] flex-col gap-1.5 text-sm max-[899px]:flex-[1_1_100%] max-[899px]:flex-row max-[899px]:flex-wrap max-[899px]:gap-x-4">
+              <span className="flex flex-[0_0_220px] flex-col gap-1.5 text-sm max-md:flex-[1_1_100%] max-md:flex-row max-md:flex-wrap max-md:gap-x-4">
                 <span className="inline-flex items-center gap-2 font-semibold">
                   <StatusDot status={p.status} />
                   {p.status}
@@ -105,7 +105,7 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
                 name="arrowUpRight"
                 size={22}
                 strokeWidth={2.2}
-                className="shrink-0 text-muted transition duration-300 ease-(--spring) group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent max-[899px]:hidden"
+                className="shrink-0 text-muted transition duration-300 ease-(--spring) group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent max-md:hidden"
               />
             </Link>
           </li>

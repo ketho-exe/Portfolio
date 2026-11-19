@@ -66,6 +66,55 @@ test("main navigation reaches every section", async ({ page, isMobile }) => {
   await expect(page).toHaveURL("/");
 });
 
+test("from 768px the header nav shows; below it the tab bar does", async ({ page }) => {
+  for (const [width, header, tabs] of [
+    [767, false, true],
+    [768, true, false],
+  ] as const) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible({ visible: header });
+    await expect(page.getByRole("navigation", { name: "Sections" })).toBeVisible({ visible: tabs });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  }
+});
+
+test("tabbing keeps the focused element clear of the sticky header and tab bar", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "the tab bar only shows on phones");
+  await page.goto("/about/");
+  const chrome = await page.evaluate(() => ({
+    top: document.querySelector("header")!.getBoundingClientRect().bottom,
+    bottom: document.querySelector('nav[aria-label="Sections"] ul')!.getBoundingClientRect().top,
+  }));
+  const hidden: string[] = [];
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press("Tab");
+    const f = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const r = el.getBoundingClientRect();
+      // The skip link is position: fixed, so it never scrolls under anything.
+      const skip = el === document.body || getComputedStyle(el).position === "fixed";
+      return { inChrome: skip || !!el.closest("header, nav[aria-label=Sections]"), top: r.top, bottom: r.bottom, text: el.textContent?.trim().slice(0, 30) };
+    });
+    if (!f.inChrome && (f.top < chrome.top - 1 || f.bottom > chrome.bottom + 1)) hidden.push(`${f.text} (${f.top}–${f.bottom})`);
+  }
+  expect(hidden).toEqual([]);
+});
+
+test("the root layout carries Person structured data from the site config", async ({ page }) => {
+  await page.goto("/");
+  const data = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
+  expect(data).toEqual({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Szymon Klejny",
+    jobTitle: "Software Developer & Automation Specialist",
+    url: `${PRODUCTION_ORIGIN}/`,
+    email: "sklejny@gmail.com",
+    sameAs: ["https://www.linkedin.com/in/szymon-klejny-732a58296/", "https://github.com/ketho-exe"],
+  });
+});
+
 test("a project in the index opens its case study", async ({ page }) => {
   await page.goto("/projects/");
   await page.getByRole("link", { name: /Facilities Management App/ }).click();

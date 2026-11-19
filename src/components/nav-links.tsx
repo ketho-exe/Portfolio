@@ -7,7 +7,7 @@ import { Icon, type IconName } from "./icons";
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(href);
 
-/** Desktop navigation (900px and up). */
+/** Desktop navigation (768px and up). */
 export function NavLinks() {
   const pathname = usePathname();
   return (
@@ -43,7 +43,7 @@ const tabs: { href: string; label: string; icon: IconName }[] = [
   })),
 ];
 
-/** Phone and tablet navigation (below 900px): a floating tab bar. */
+/** Phone navigation (below 768px): a floating tab bar. */
 export function TabLinks() {
   const pathname = usePathname();
   return (

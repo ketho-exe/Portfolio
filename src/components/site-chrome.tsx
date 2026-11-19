@@ -23,7 +23,7 @@ export function SiteHeader() {
           <span className="truncate font-semibold">{site.name}</span>
           <span className="sr-only">, home</span>
         </Link>
-        <nav aria-label="Main" className="hidden min-[900px]:block">
+        <nav aria-label="Main" className="hidden md:block">
           <NavLinks />
         </nav>
         <MotionSwitch />
@@ -32,10 +32,10 @@ export function SiteHeader() {
   );
 }
 
-/** Below 900px the header nav is replaced by this bottom tab bar. */
+/** Below 768px the header nav is replaced by this bottom tab bar. */
 export function TabBar() {
   return (
-    <nav aria-label="Sections" className="sticky bottom-4 z-20 flex justify-center px-2 pb-4 min-[360px]:px-3 min-[900px]:hidden">
+    <nav aria-label="Sections" className="sticky bottom-4 z-20 flex justify-center px-2 pb-4 min-[360px]:px-3 md:hidden">
       <TabLinks />
     </nav>
   );
