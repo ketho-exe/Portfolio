@@ -36,32 +36,47 @@ export default function ContactPage() {
         work out of.
       </p>
 
-      <section aria-labelledby="mail-title" className="glass mt-14 flex flex-wrap items-center justify-between gap-6 rounded-card p-6 sm:p-9">
-        <div className="min-w-0">
-          <h2 id="mail-title" className="font-mono text-xs font-medium tracking-[0.08em] text-muted">
-            EMAIL · THE BEST WAY TO REACH ME
-          </h2>
-          {site.email ? (
-            <a
-              href={`mailto:${site.email}`}
-              className="underline-grow mt-3.5 inline-block font-serif text-display-4 leading-none [overflow-wrap:anywhere]"
-            >
-              {site.email}
-            </a>
-          ) : (
-            <div className="mt-3.5">
-              <Placeholder>Email not supplied yet (src/content/site.ts)</Placeholder>
+      <section aria-labelledby="mail-title" className="glass mt-14 rounded-card p-6 sm:p-9">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="min-w-0">
+            <h2 id="mail-title" className="font-mono text-xs font-medium tracking-[0.08em] text-muted">
+              EMAIL · THE BEST WAY TO REACH ME
+            </h2>
+            {site.email ? (
+              <a
+                href={`mailto:${site.email}`}
+                className="underline-grow mt-3.5 inline-block font-serif text-display-4 leading-none [overflow-wrap:anywhere]"
+              >
+                {site.email}
+              </a>
+            ) : (
+              <div className="mt-3.5">
+                <Placeholder>Email not supplied yet (src/content/site.ts)</Placeholder>
+              </div>
+            )}
+          </div>
+          {site.email && (
+            <div className="flex flex-wrap items-center gap-2.5">
+              <CopyButton text={site.email} label="Copy address" />
+              <ButtonAnchor href={`mailto:${site.email}`} className="min-h-11 px-5 text-[15px]">
+                Write an email
+              </ButtonAnchor>
             </div>
           )}
         </div>
-        {site.email && (
-          <div className="flex flex-wrap items-center gap-2.5">
-            <CopyButton text={site.email} label="Copy address" />
-            <ButtonAnchor href={`mailto:${site.email}`} className="min-h-11 px-5 text-[15px]">
-              Write an email
-            </ButtonAnchor>
-          </div>
-        )}
+        <div className="mt-7 border-t border-border pt-6">
+          <h3 className="text-[15px] font-semibold">Writing about a process? It helps to mention:</h3>
+          <ol className="mt-4 grid gap-x-8 gap-y-3 md:grid-cols-3">
+            {brief.map((b, i) => (
+              <li key={b} className="flex gap-3 text-[15px] leading-normal text-soft">
+                <span aria-hidden="true" className="font-mono text-[13px] leading-[1.6] text-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-pretty">{b}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <section aria-labelledby="more-title" className="mt-5">
@@ -101,24 +116,7 @@ export default function ContactPage() {
         </ul>
       </section>
 
-      <section aria-labelledby="brief-title" className="mt-24 flex flex-wrap gap-x-16 gap-y-8">
-        <div className="flex-[1_1_360px]">
-          <Eyebrow>If it&apos;s about a process</Eyebrow>
-          <h2 id="brief-title" className="mt-2.5 font-serif text-display-3 leading-none">
-            Three things that help
-          </h2>
-        </div>
-        <ol className="flex-[999_1_560px] border-t border-border">
-          {brief.map((b, i) => (
-            <li key={b} className="flex gap-5 border-b border-border py-[22px]">
-              <span className="font-mono text-[13px] text-accent">{String(i + 1).padStart(2, "0")}</span>
-              <span className="text-lg leading-normal">{b}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <Note icon={<Icon name="info" size={20} />} className="mt-[72px]">
+      <Note icon={<Icon name="info" size={20} />} className="mt-14">
         There&apos;s no contact form: this is a static site with no server and no tracking, so nothing you&apos;d type here
         could be stored safely. Email goes straight to me.
       </Note>
