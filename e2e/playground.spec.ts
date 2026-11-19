@@ -114,3 +114,23 @@ test("tabs support arrow keys", async ({ page, isMobile }) => {
   await expect(page.getByRole("tab", { name: "Steps" })).toBeFocused();
   await expect(page.getByRole("tab", { name: "Steps" })).toHaveAttribute("aria-selected", "true");
 });
+
+test("on a phone, swiping over the graph scrolls the page", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "touch journey");
+  const pane = page.locator(".react-flow__pane");
+  await page.evaluate(() => scrollBy(0, document.querySelector(".react-flow")!.getBoundingClientRect().top - 120));
+  const box = (await pane.boundingBox())!;
+  const x = Math.round(box.x + 20);
+  const y = Math.round(box.y + box.height / 2);
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.classList.contains("react-flow__pane"), [x, y])).toBe(true);
+
+  // Raw touch events, so the browser applies touch-action as it would for a finger.
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (type: "touchStart" | "touchMove" | "touchEnd", ty?: number) =>
+    cdp.send("Input.dispatchTouchEvent", { type, touchPoints: ty === undefined ? [] : [{ x, y: ty }] });
+  const before = await page.evaluate(() => scrollY);
+  await touch("touchStart", y);
+  for (let ty = y - 10; ty >= y - 300; ty -= 10) await touch("touchMove", ty);
+  await touch("touchEnd");
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(before + 150);
+});

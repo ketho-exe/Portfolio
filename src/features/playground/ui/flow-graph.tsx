@@ -11,6 +11,7 @@ import { StepNodeView, type StepNode } from "./step-node";
 const nodeTypes = { step: StepNodeView };
 
 // On touch screens, dragging the canvas would trap page scrolling. The whole graph is fitted to view, so panning isn't needed there.
+// React Flow's stylesheet also sets `touch-action: none` on the pane, which blocks the browser's own scroll; `.touch-scroll` (globals.css) undoes it.
 const coarseQuery = "(pointer: coarse)";
 function useCoarsePointer() {
   return useSyncExternalStore(
@@ -82,6 +83,7 @@ export default function FlowGraph({ definition, frame, selectedId, badges, onSel
       zoomOnScroll={false}
       zoomOnDoubleClick={false}
       preventScrolling={false}
+      className={touch ? "touch-scroll" : undefined}
     >
       <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="var(--border)" />
       {!touch && <Controls showInteractive={false} />}

@@ -461,6 +461,10 @@ body {
 .react-flow__attribution a {
   color: var(--muted);
 }
+/* Touch screens: let a swipe over the graph scroll the page (React Flow sets touch-action: none). */
+.react-flow.touch-scroll .react-flow__pane {
+  touch-action: manipulation;
+}
 .react-flow__edge.taken .react-flow__edge-path {
   stroke: var(--ok);
   stroke-width: 2;
