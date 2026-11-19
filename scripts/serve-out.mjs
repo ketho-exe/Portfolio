@@ -47,7 +47,13 @@ function send(res, status, file, req) {
 
 createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://localhost");
-  const path = normalize(join(root, decodeURIComponent(url.pathname)));
+  let decoded;
+  try {
+    decoded = decodeURIComponent(url.pathname);
+  } catch {
+    return send(res, 404, join(root, "404.html"), req); // malformed escape, e.g. /%E0%A4%A/
+  }
+  const path = normalize(join(root, decoded));
   if (!path.startsWith(root)) return send(res, 404, join(root, "404.html"), req);
 
   if (existsSync(path) && statSync(path).isDirectory()) {
