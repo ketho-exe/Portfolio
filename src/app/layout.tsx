@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ContactButton } from "@/components/contact-button";
 import { SiteFooter, SiteHeader, TabBar } from "@/components/site-chrome";
 import { site } from "@/content/site";
+import { csp } from "./csp";
 import { baseOpenGraph } from "./shared-metadata";
 import "./globals.css";
 
@@ -24,26 +25,6 @@ export const viewport: Viewport = {
   themeColor: "#0b0c0e",
   colorScheme: "dark",
 };
-
-/**
- * Content-Security-Policy (production only; dev needs eval and websockets for hot reload).
- * connect-src 'self' means page scripts can only make requests to this site, so a visitor's document
- * can't be sent anywhere else. Inline scripts/styles are needed by Next's static export and React Flow.
- * Static export can't set headers, so this is a <meta> tag. vercel.json sends the same policy as a header
- * (plus frame-ancestors and 'wasm-unsafe-eval' for the OCR worker); keep the two in step.
- */
-const csp = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "worker-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join("; ");
 
 // Structured data for search engines. Only fields from `site`; nothing added.
 const person = {
