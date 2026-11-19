@@ -306,5 +306,15 @@ test("robots, sitemap and share image are served", async ({ request, page }) => 
   const iconRes = await request.get(icon!);
   expect(iconRes.headers()["content-type"]).toBe("image/png");
   expect((await iconRes.body()).readUInt32BE(16)).toBe(180); // PNG width
+  // The favicon is the yellow monogram, not the Next.js default.
+  const favPixel = await page.evaluate(async () => {
+    const img = new Image();
+    img.src = "/favicon.ico";
+    await img.decode();
+    const ctx = Object.assign(document.createElement("canvas"), { width: 32, height: 32 }).getContext("2d")!;
+    ctx.drawImage(img, 0, 0, 32, 32);
+    return [...ctx.getImageData(16, 4, 1, 1).data];
+  });
+  expect(favPixel).toEqual([0xff, 0xd2, 0x3f, 255]);
   await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", /^Szymon Klejny, .+[^\n]$/);
 });
