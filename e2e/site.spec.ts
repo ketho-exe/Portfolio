@@ -161,6 +161,28 @@ test("unknown pages return 404 with a way home", async ({ page }) => {
   await expect(page).toHaveURL("/");
 });
 
+test("a 404 with a malformed escape in the path shows it as typed", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const res = await page.goto("/%E0%A4%A/");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByText("/%E0%A4%A/")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("the home highlights sit under one visually hidden heading", async ({ page }) => {
+  await page.goto("/");
+  const highlights = page.getByRole("region", { name: "Highlights" });
+  await expect(highlights.getByRole("heading", { level: 2 })).toHaveText("Highlights");
+  await expect(highlights.getByRole("heading", { level: 3, name: "Expense approval" })).toBeVisible();
+});
+
+test("ids on the About page are unique", async ({ page }) => {
+  await page.goto("/about/");
+  const ids = await page.locator("[id]").evaluateAll((els) => els.map((e) => e.id));
+  expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+});
+
 test("the Motion switch pauses decorative motion and remembers it", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");
@@ -280,5 +302,9 @@ test("robots, sitemap and share image are served", async ({ request, page }) => 
   const res = await request.get(new URL(og!).pathname);
   expect(res.status()).toBe(200);
   expect(res.headers()["content-type"]).toBe("image/png");
+  const icon = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href");
+  const iconRes = await request.get(icon!);
+  expect(iconRes.headers()["content-type"]).toBe("image/png");
+  expect((await iconRes.body()).readUInt32BE(16)).toBe(180); // PNG width
   await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", /^Szymon Klejny, .+[^\n]$/);
 });
