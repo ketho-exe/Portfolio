@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { MissingPath } from "@/components/missing-path";
-import { Em } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Page not found" };
 
@@ -14,7 +13,7 @@ const routes = [
   ["Contact", "/contact/", "Email, LinkedIn, GitHub and CV"],
 ];
 
-const row = "grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-white/7 px-[18px] py-3 sm:min-h-16 sm:grid-cols-[96px_minmax(0,1fr)_140px] sm:px-6 sm:py-0";
+const row = "grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-t border-border px-[18px] py-3 sm:min-h-16 sm:grid-cols-[96px_minmax(0,1fr)_140px] sm:px-6 sm:py-0";
 
 export default function NotFound() {
   return (
@@ -22,8 +21,8 @@ export default function NotFound() {
       <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
         <div>
           <p className="font-mono text-xs tracking-[0.08em] text-danger">ERROR 404</p>
-          <h1 className="mt-3 font-serif text-[clamp(56px,8vw,112px)] leading-[0.92]">
-            This page has been <Em>cancelled.</Em>
+          <h1 className="mt-3 font-serif text-display-1 leading-[0.92]">
+            This page has been cancelled.
           </h1>
         </div>
         <p className="max-w-[360px] text-[17px] leading-normal text-soft">
@@ -33,7 +32,7 @@ export default function NotFound() {
 
       <nav
         aria-label="Pages on this site"
-        className="mt-11 overflow-hidden rounded-[28px] border border-white/10 bg-[#121316] shadow-[inset_0_2px_0_rgb(255_255_255/0.04),0_24px_60px_rgb(0_0_0/0.45)]"
+        className="mt-11 overflow-hidden rounded-card board border border-border"
       >
         <div aria-hidden="true" className={`${row} min-h-12 border-t-0 font-mono text-[11px] tracking-[0.08em] text-muted max-sm:hidden`}>
           <span>PLATFORM</span>
@@ -44,7 +43,7 @@ export default function NotFound() {
           <span className="font-mono">
             <span className="flap">404</span>
           </span>
-          <span className="text-xl font-semibold text-soft line-through decoration-[rgb(255_138_132/0.7)] [overflow-wrap:anywhere]">
+          <span className="text-xl font-semibold text-soft line-through decoration-danger [overflow-wrap:anywhere]">
             <MissingPath />
           </span>
           <span className="col-start-2 font-mono text-[13px] font-bold text-danger sm:col-start-auto">CANCELLED</span>
@@ -54,7 +53,7 @@ export default function NotFound() {
             key={href}
             href={href}
             prefetch={href === "/playground/" ? false : undefined}
-            className={`${row} group hover:bg-[rgb(255_210_63/0.07)]`}
+            className={`${row} group hover:bg-accent-wash`}
           >
             <span aria-hidden="true" className="font-mono">
               <span className="flap" style={{ "--d": i + 1 } as CSSProperties}>

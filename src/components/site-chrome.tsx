@@ -11,7 +11,7 @@ const initials = site.name
 export function SiteHeader() {
   return (
     <header id="top" className="sticky top-0 z-20 px-4 pt-3.5 sm:px-6">
-      <div className="glass relative mx-auto flex min-h-16 max-w-[1200px] items-center justify-between gap-3 rounded-[22px] pr-2.5 pl-3">
+      <div className="glass relative mx-auto flex min-h-16 max-w-[1200px] items-center justify-between gap-3 rounded-card pr-2.5 pl-3">
         {/* Accessible name "Szymon Klejny, home" contains the visible name (WCAG 2.5.3). */}
         <Link href="/" className="flex min-w-0 items-center gap-3">
           <span
@@ -50,9 +50,9 @@ export function SiteFooter() {
 
   return (
     <footer className="relative mx-auto mt-8 w-full max-w-[1200px] px-4 pb-10 sm:px-6">
-      <div className="glass flex flex-wrap items-center justify-between gap-6 rounded-[26px] p-7">
+      <div className="glass flex flex-wrap items-center justify-between gap-6 rounded-card p-7">
         <div>
-          <p className="font-serif text-[28px] leading-tight">{site.name}</p>
+          <p className="font-serif text-display-6 leading-tight">{site.name}</p>
           <p className="mt-1.5 font-mono text-xs text-muted">Static site · no tracking · © {new Date().getFullYear()}</p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-1 text-[15px]">

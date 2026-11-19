@@ -77,7 +77,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div aria-hidden="true" className="bg-dots" />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-xl focus:bg-accent focus:px-4 focus:py-3 focus:font-bold focus:text-accent-fg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-chip focus:bg-accent focus:px-4 focus:py-3 focus:font-bold focus:text-accent-fg"
         >
           Skip to content
         </a>

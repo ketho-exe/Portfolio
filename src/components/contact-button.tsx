@@ -72,7 +72,7 @@ export function ContactButton() {
         aria-expanded={open}
         aria-controls="contact-links"
         onClick={() => setMode(mode === "pinned" ? null : "pinned")}
-        className="relative z-[2] size-16 cursor-pointer rounded-full border border-white/35 bg-accent text-accent-fg shadow-[0_12px_32px_rgb(255_210_63/0.3)] transition-transform duration-300 ease-(--spring) hover:scale-[1.07]"
+        className="relative z-[2] size-16 cursor-pointer rounded-full border border-border-strong bg-accent text-accent-fg shadow-[0_12px_32px_var(--accent-hairline)] transition-transform duration-300 ease-(--spring) hover:scale-[1.07]"
       >
         <Icon name="chat" size={26} className="fab-icon-swap fab-chat" />
         <Icon name="close" size={24} strokeWidth={2.4} className="fab-icon-swap fab-close" />

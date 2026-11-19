@@ -3,7 +3,7 @@ import { pageMetadata } from "@/app/shared-metadata";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { RolePoints } from "@/components/role-points";
-import { Container, Em, Eyebrow, SectionHeading } from "@/components/ui";
+import { Container, Eyebrow, SectionHeading } from "@/components/ui";
 import { education, experience, languages } from "@/content/experience";
 import { site } from "@/content/site";
 import { skillGroups } from "@/content/skills";
@@ -31,8 +31,8 @@ export default function AboutPage() {
       <div className="flex flex-wrap items-start gap-x-16 gap-y-10">
         <div className="min-w-0 flex-[999_1_600px]">
           <Eyebrow>About</Eyebrow>
-          <h1 className="mt-3.5 font-serif text-[clamp(48px,6.2vw,92px)] leading-[0.98] text-balance">
-            Practical software, built to be <Em>understood</Em> and maintained.
+          <h1 className="mt-3.5 font-serif text-display-2 leading-[0.98] text-balance">
+            Practical software, built to be understood and maintained.
           </h1>
           <div className="mt-8 max-w-[640px] space-y-4 text-[19px] leading-[1.65] text-soft">
             <p>
@@ -51,7 +51,7 @@ export default function AboutPage() {
           </div>
         </div>
         <aside aria-label="At a glance" className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
-          <dl className="glass rounded-3xl px-5 py-2">
+          <dl className="glass rounded-card px-5 py-2">
             {[
               ["Role", site.role],
               ["Languages", languages.map((l) => l.replace(/ \(.+\)$/, "")).join(", ")],
@@ -89,7 +89,7 @@ export default function AboutPage() {
                   <p className="mt-2 text-lg font-semibold">{r.organisation}</p>
                 </div>
               </div>
-              <article className="glass min-w-0 flex-[999_1_560px] rounded-[28px] p-6 sm:p-[30px]">
+              <article className="glass min-w-0 flex-[999_1_560px] rounded-card p-6 sm:p-[30px]">
                 <h3 className="text-2xl font-semibold tracking-[-0.01em]">{r.title}</h3>
                 <p className="mt-3 max-w-[720px] text-[17px] leading-relaxed text-soft">{r.summary}</p>
                 <RolePoints points={r.points} />
@@ -109,14 +109,14 @@ export default function AboutPage() {
         </div>
         <dl className="mt-9 grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-4">
           {skillGroups.map((g) => (
-            <div key={g.area} className="glass rounded-3xl p-[22px]">
+            <div key={g.area} className="glass rounded-card p-[22px]">
               <dt className="font-mono text-xs tracking-[0.04em] text-muted">{g.area}</dt>
               <dd className="mt-3.5 flex flex-wrap gap-2">
                 {g.items.map((item) => (
                   <span
                     key={item}
                     className={`inline-flex min-h-8 items-center rounded-full border px-3 text-sm ${
-                      /basic/.test(item) ? "border-dashed border-border-strong text-soft" : "border-white/16 bg-white/4"
+                      /basic/.test(item) ? "border-dashed border-border-strong text-soft" : "border-border bg-surface-2"
                     }`}
                   >
                     {item}
@@ -131,10 +131,10 @@ export default function AboutPage() {
 
       <section aria-labelledby="approach-title" className="mt-28">
         <SectionHeading eyebrow="Approach" title="How I work" id="approach-title" />
-        <ol className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] border-t border-white/14">
+        <ol className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] border-t border-border">
           {approach.map(([title, body], i) => (
-            <li key={title} className="flex gap-[18px] border-b border-white/14 py-7 pr-6">
-              <span aria-hidden="true" className="step-numeral font-serif text-[72px] leading-[0.8]">
+            <li key={title} className="flex gap-[18px] border-b border-border py-7 pr-6">
+              <span aria-hidden="true" className="step-numeral font-serif text-display-3 leading-[0.8]">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div>
@@ -148,9 +148,9 @@ export default function AboutPage() {
 
       <div className="mt-28 grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-5">
         {education.map((e) => (
-          <section key={e.title} aria-labelledby="edu-title" className="glass rounded-[28px] p-[30px]">
+          <section key={e.title} aria-labelledby="edu-title" className="glass rounded-card p-[30px]">
             <Eyebrow>Education</Eyebrow>
-            <h2 id="edu-title" className="mt-2.5 font-serif text-4xl leading-[1.05]">
+            <h2 id="edu-title" className="mt-2.5 font-serif text-display-5 leading-[1.05]">
               {e.title}
             </h2>
             <p className="mt-3 text-soft">{e.organisation}</p>
@@ -159,21 +159,21 @@ export default function AboutPage() {
             </p>
           </section>
         ))}
-        <section aria-labelledby="lang-title" className="glass rounded-[28px] p-[30px]">
+        <section aria-labelledby="lang-title" className="glass rounded-card p-[30px]">
           <Eyebrow>Languages</Eyebrow>
-          <h2 id="lang-title" className="mt-2.5 font-serif text-4xl leading-[1.05]">
+          <h2 id="lang-title" className="mt-2.5 font-serif text-display-5 leading-[1.05]">
             Spoken
           </h2>
           <ul className="mt-4 flex flex-wrap gap-2.5">
             {spoken.map((l) => (
-              <li key={l} className="inline-flex min-h-8 items-center rounded-full border border-white/16 bg-white/4 px-3 text-sm">
+              <li key={l} className="inline-flex min-h-8 items-center rounded-full border border-border bg-surface-2 px-3 text-sm">
                 {l}
               </li>
             ))}
           </ul>
         </section>
-        <section aria-labelledby="next-title" className="flex flex-col justify-between gap-5 rounded-[28px] bg-accent p-[30px] text-accent-fg">
-          <h2 id="next-title" className="font-serif text-[40px] leading-none">
+        <section aria-labelledby="next-title" className="flex flex-col justify-between gap-5 rounded-card bg-accent p-[30px] text-accent-fg">
+          <h2 id="next-title" className="font-serif text-display-5 leading-none">
             Want the details?
           </h2>
           <div className="flex flex-wrap gap-2.5">

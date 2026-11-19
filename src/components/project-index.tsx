@@ -43,25 +43,25 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
       </div>
 
       {filter !== "own" && (
-        <Link href={`/projects/${featured.slug}/`} className="glass lift pop mt-6 flex flex-wrap overflow-hidden rounded-[30px]">
+        <Link href={`/projects/${featured.slug}/`} className="glass lift mt-6 flex flex-wrap overflow-hidden rounded-card">
           <span className="min-w-0 flex-[999_1_520px] p-6 sm:p-9">
             <span className="block font-mono text-xs tracking-[0.06em] text-accent">FEATURED CASE STUDY</span>
-            <span className="mt-3 block font-serif text-[clamp(38px,4.4vw,60px)] leading-none">{featured.name}</span>
+            <span className="mt-3 block font-serif text-display-4 leading-none">{featured.name}</span>
             <span className="mt-3.5 block max-w-[600px] text-[17px] leading-relaxed text-soft">{featured.summary}</span>
             <span className="mt-5 inline-flex min-h-11 items-center rounded-full bg-accent px-5 text-[15px] font-bold text-accent-fg">
               Read the case study
             </span>
           </span>
           {featured.result && (
-            <span className="flex min-w-0 flex-[1_1_300px] flex-col justify-center gap-[18px] border-l border-[rgb(255_210_63/0.25)] bg-[rgb(255_210_63/0.08)] p-6 sm:p-9">
+            <span className="flex min-w-0 flex-[1_1_300px] flex-col justify-center gap-[18px] border-l border-accent-hairline bg-accent-wash p-6 sm:p-9">
               <span className="block">
                 <span className="block font-mono text-[11px] text-muted">BEFORE</span>
-                <span className="block font-serif text-[40px] leading-none text-soft">{featured.result.before}</span>
+                <span className="block font-serif text-display-5 leading-none text-soft">{featured.result.before}</span>
               </span>
-              <span aria-hidden="true" className="block h-px bg-[rgb(255_210_63/0.35)]" />
+              <span aria-hidden="true" className="block h-px bg-accent-hairline" />
               <span className="block">
                 <span className="block font-mono text-[11px] text-accent">AFTER</span>
-                <span className="block font-serif text-[56px] leading-none text-accent">{featured.result.after.replace("minutes", "min")}</span>
+                <span className="block font-serif text-display-3 leading-none text-accent">{featured.result.after.replace("minutes", "min")}</span>
               </span>
             </span>
           )}
@@ -69,19 +69,19 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
       )}
 
       <h2 className="sr-only">Project index</h2>
-      <ol className="glass mt-6 overflow-hidden rounded-[30px]">
+      <ol className="glass mt-6 overflow-hidden rounded-card">
         {list.map((p) => (
-          <li key={p.slug} className="pop border-t border-border first:border-t-0">
+          <li key={p.slug} className="border-t border-border first:border-t-0">
             <Link
               href={`/projects/${p.slug}/`}
               prefetch={p.links?.demo === "/playground/" ? false : undefined}
-              className="group flex flex-wrap items-center gap-x-7 gap-y-3 px-5 py-6 transition-colors hover:bg-[rgb(255_210_63/0.07)] focus-visible:bg-[rgb(255_210_63/0.07)] sm:px-7"
+              className="group flex flex-wrap items-center gap-x-7 gap-y-3 px-5 py-6 transition-colors hover:bg-accent-wash focus-visible:bg-accent-wash sm:px-7"
             >
               <span className="w-[34px] shrink-0 font-mono text-[13px] text-muted">
                 {String(projects.indexOf(p) + 1).padStart(2, "0")}
               </span>
               <span className="min-w-0 flex-[999_1_380px]">
-                <span className="block font-serif text-[clamp(28px,2.8vw,38px)] leading-[1.05] transition-colors group-hover:text-accent">
+                <span className="block font-serif text-display-5 leading-[1.05] transition-colors group-hover:text-accent">
                   {p.name}
                 </span>
                 <span className="mt-2 block max-w-[620px] text-[15px] leading-relaxed text-soft">{p.summary}</span>

@@ -202,7 +202,7 @@ export function Playground() {
 
   return (
     <>
-      <section ref={runner} aria-label="Workflow runner" className="glass mt-9 scroll-mt-24 overflow-hidden rounded-[30px]">
+      <section ref={runner} aria-label="Workflow runner" className="glass mt-9 scroll-mt-24 overflow-hidden rounded-card">
         {/* Workflow picker and run controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3.5 py-3">
           <div role="group" aria-label="Workflow" className="inline-flex flex-wrap gap-1 rounded-full bg-surface-2 p-1">
@@ -262,7 +262,7 @@ export function Playground() {
             <select
               value={file ? "" : sampleId}
               onChange={(e) => loadSample(e.target.value)}
-              className="h-11 min-w-56 cursor-pointer rounded-xl border border-border-strong bg-surface-solid px-3 font-sans text-[15px] tracking-normal text-fg normal-case"
+              className="h-11 min-w-56 cursor-pointer rounded-chip border border-border-strong bg-surface-solid px-3 font-sans text-[15px] tracking-normal text-fg normal-case"
             >
               {file && (
                 <option value="" disabled>
@@ -342,7 +342,7 @@ export function Playground() {
       <section aria-labelledby="own-title" className="mt-[72px] flex flex-wrap gap-5">
         <div className="min-w-0 flex-[1_1_380px]">
           <p className="font-mono text-xs tracking-[0.08em] text-accent">BRING YOUR OWN</p>
-          <h2 id="own-title" className="mt-2.5 font-serif text-[clamp(40px,4.4vw,60px)] leading-none">
+          <h2 id="own-title" className="mt-2.5 font-serif text-display-3 leading-none">
             Run it on your own document.
           </h2>
           <p className="mt-4 max-w-[480px] text-[17px] leading-relaxed text-soft">
@@ -431,7 +431,7 @@ function InputPanel({
         aria-invalid={error !== null}
         aria-describedby={error ? "workflow-input-error" : undefined}
         rows={16}
-        className={`mt-2 w-full resize-y rounded-xl border bg-code p-3.5 font-mono text-[13px] leading-[1.7] text-fg ${
+        className={`mt-2 w-full resize-y rounded-chip border bg-code p-3.5 font-mono text-[13px] leading-[1.7] text-fg ${
           error ? "border-danger" : "border-border"
         }`}
       />
@@ -475,7 +475,7 @@ function StepPanel({
               <button
                 type="button"
                 onClick={() => onSelect(n.id)}
-                className="flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-lg px-2 text-left text-sm transition hover:bg-surface-2"
+                className="flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-chip px-2 text-left text-sm transition hover:bg-surface-2"
               >
                 <span className="w-5 font-mono text-xs text-muted">{i + 1}</span>
                 <span className="flex-1 truncate">{n.label}</span>
@@ -504,19 +504,19 @@ function StepPanel({
       </div>
 
       {simulatedIds.has(node.id) && (
-        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
+        <p className="rounded-chip border border-border bg-code px-3 py-2 text-xs text-soft">
           <span className="text-accent">Simulated.</span> A deterministic mock stands in for the real service. No external
           system is contacted.
         </p>
       )}
       {badges[node.id] === "you" && (
-        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
+        <p className="rounded-chip border border-border bg-code px-3 py-2 text-xs text-soft">
           <span className="text-accent">Your step.</span> The run really pauses here until you confirm or reject. Nothing
           is sent anywhere.
         </p>
       )}
       {badges[node.id] === "on device" && (
-        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
+        <p className="rounded-chip border border-border bg-code px-3 py-2 text-xs text-soft">
           <span className="text-ok">Runs on your device.</span> This step does real work in your browser. Your data is
           not uploaded anywhere.
         </p>
@@ -671,7 +671,7 @@ function UploadBox({
   return (
     <div className="min-w-0 flex-[1_1_420px]">
       {file ? (
-        <div className="glass flex flex-col gap-4 rounded-[26px] border-2! border-[rgb(255_210_63/0.6)]! p-6 sm:p-8">
+        <div className="glass flex flex-col gap-4 rounded-card border-2! border-accent-line! p-6 sm:p-8">
           <p className="min-w-0">
             <span className="block font-mono text-xs tracking-[0.06em] text-accent">READY ON THIS DEVICE</span>
             <span className="mt-2 block truncate text-lg font-semibold">{file.name}</span>
@@ -704,8 +704,8 @@ function UploadBox({
           }}
           onDragLeave={() => setOver(false)}
           onDrop={onDrop}
-          className={`glass flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[26px] border-2! border-dashed! p-9 text-center transition-colors focus-within:border-accent! hover:border-accent! ${
-            over ? "border-accent! bg-accent-soft!" : "border-white/28!"
+          className={`glass flex cursor-pointer flex-col items-center justify-center gap-3 rounded-card border-2! border-dashed! p-9 text-center transition-colors focus-within:border-accent! hover:border-accent! ${
+            over ? "border-accent! bg-accent-soft!" : "border-border-strong!"
           }`}
         >
           <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -821,7 +821,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Json({ value }: { value: unknown }) {
   return (
-    <pre className="max-h-72 overflow-auto rounded-xl border border-border bg-code p-3.5 font-mono text-xs leading-relaxed">
+    <pre className="max-h-72 overflow-auto rounded-chip border border-border bg-code p-3.5 font-mono text-xs leading-relaxed">
       {pretty(value)}
     </pre>
   );

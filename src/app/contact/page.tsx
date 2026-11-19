@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/app/shared-metadata";
 import { CopyButton } from "@/components/copy-button";
 import { Icon, type IconName } from "@/components/icons";
-import { ButtonAnchor, Container, Em, Eyebrow, Note, Placeholder } from "@/components/ui";
+import { ButtonAnchor, Container, Eyebrow, Note, Placeholder } from "@/components/ui";
 import { site } from "@/content/site";
 
 export const metadata: Metadata = pageMetadata("/contact/", {
@@ -28,15 +28,15 @@ export default function ContactPage() {
   return (
     <Container wide className="pt-16 pb-24 sm:pt-[72px]">
       <Eyebrow>Contact</Eyebrow>
-      <h1 className="mt-3.5 font-serif text-[clamp(72px,12vw,180px)] leading-[0.85] tracking-[-0.02em]">
-        Let&apos;s <Em>talk.</Em>
+      <h1 className="mt-3.5 font-serif text-display-1 leading-[0.85] tracking-[-0.02em]">
+        Let&apos;s talk.
       </h1>
       <p className="mt-7 max-w-[620px] text-xl leading-relaxed text-soft">
         Get in touch about software development and automation work, or a process you&apos;d like to take the manual
         work out of.
       </p>
 
-      <section aria-labelledby="mail-title" className="glass mt-14 flex flex-wrap items-center justify-between gap-6 rounded-[32px] p-6 sm:p-9">
+      <section aria-labelledby="mail-title" className="glass mt-14 flex flex-wrap items-center justify-between gap-6 rounded-card p-6 sm:p-9">
         <div className="min-w-0">
           <h2 id="mail-title" className="font-mono text-xs font-medium tracking-[0.08em] text-muted">
             EMAIL · THE BEST WAY TO REACH ME
@@ -44,7 +44,7 @@ export default function ContactPage() {
           {site.email ? (
             <a
               href={`mailto:${site.email}`}
-              className="underline-grow mt-3.5 inline-block font-serif text-[clamp(34px,4.6vw,64px)] leading-none [overflow-wrap:anywhere]"
+              className="underline-grow mt-3.5 inline-block font-serif text-display-4 leading-none [overflow-wrap:anywhere]"
             >
               {site.email}
             </a>
@@ -74,11 +74,11 @@ export default function ContactPage() {
               {c.href ? (
                 <a
                   href={c.href}
-                  className="glass group relative flex h-full flex-col gap-3.5 rounded-[28px] p-[26px] transition duration-300 ease-(--spring) hover:-translate-y-1 hover:border-[rgb(255_210_63/0.6)]"
+                  className="glass group relative flex h-full flex-col gap-3.5 rounded-card p-[26px] transition duration-300 ease-(--spring) hover:-translate-y-1 hover:border-accent-line"
                   {...(c.external && { target: "_blank", rel: "noopener noreferrer" })}
                   {...(c.download && { download: true })}
                 >
-                  <span aria-hidden="true" className="flex size-[52px] items-center justify-center rounded-2xl bg-[rgb(255_210_63/0.14)] text-accent">
+                  <span aria-hidden="true" className="flex size-[52px] items-center justify-center rounded-panel bg-accent-soft text-accent">
                     <Icon name={c.icon} size={24} />
                   </span>
                   <span className="text-[22px] font-semibold">
@@ -104,13 +104,13 @@ export default function ContactPage() {
       <section aria-labelledby="brief-title" className="mt-24 flex flex-wrap gap-x-16 gap-y-8">
         <div className="flex-[1_1_360px]">
           <Eyebrow>If it&apos;s about a process</Eyebrow>
-          <h2 id="brief-title" className="mt-2.5 font-serif text-[clamp(40px,4.4vw,60px)] leading-none">
+          <h2 id="brief-title" className="mt-2.5 font-serif text-display-3 leading-none">
             Three things that help
           </h2>
         </div>
-        <ol className="flex-[999_1_560px] border-t border-white/14">
+        <ol className="flex-[999_1_560px] border-t border-border">
           {brief.map((b, i) => (
-            <li key={b} className="flex gap-5 border-b border-white/14 py-[22px]">
+            <li key={b} className="flex gap-5 border-b border-border py-[22px]">
               <span className="font-mono text-[13px] text-accent">{String(i + 1).padStart(2, "0")}</span>
               <span className="text-lg leading-normal">{b}</span>
             </li>

@@ -57,7 +57,7 @@ export function TabLinks() {
               prefetch={href === "/playground/" ? false : undefined}
               aria-current={active ? "page" : undefined}
               className={`flex min-h-[52px] min-w-14 flex-col items-center justify-center gap-[3px] rounded-full text-[11px] font-semibold ${
-                active ? "bg-[rgb(255_210_63/0.18)] text-accent" : "text-soft"
+                active ? "bg-accent-soft text-accent" : "text-soft"
               }`}
             >
               <Icon name={icon} size={22} />

@@ -39,13 +39,13 @@ export function MotionSwitch() {
       className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-1.5 pl-2.5 text-sm"
     >
       {/* Visually hidden on very narrow screens so the site name fits; still the switch's accessible name. */}
-      <span className="max-[399px]:sr-only">Motion</span>
+      <span className="max-[374px]:sr-only">Motion</span>
       <span
         aria-hidden="true"
-        className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-250 ${on ? "bg-ok" : "bg-[rgb(120_120_128/0.42)]"}`}
+        className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-250 ${on ? "bg-ok" : "bg-border-strong"}`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 size-[27px] rounded-full bg-white shadow-[0_3px_8px_rgb(0_0_0/0.25)] transition-transform duration-300 ease-(--spring) ${
+          className={`absolute top-0.5 left-0.5 size-[27px] rounded-full bg-white shadow-md transition-transform duration-300 ease-(--spring) ${
             on ? "translate-x-5" : ""
           }`}
         />

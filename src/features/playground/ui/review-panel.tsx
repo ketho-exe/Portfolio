@@ -43,7 +43,7 @@ export function ReviewPanel({
     onDecide({ action: "approve", values });
   }
 
-  const box = "mt-1.5 h-11 w-full rounded-lg border bg-surface-solid px-3 text-[15px] text-fg";
+  const box = "mt-1.5 h-11 w-full rounded-chip border bg-surface-solid px-3 text-[15px] text-fg";
 
   return (
     <form onSubmit={approve} noValidate className="space-y-4 text-sm">
@@ -56,7 +56,7 @@ export function ReviewPanel({
       </div>
 
       {reference && (
-        <details className="rounded-xl border border-border bg-code">
+        <details className="rounded-chip border border-border bg-code">
           <summary className="min-h-10 cursor-pointer px-3 py-2.5 text-xs font-semibold">Show the document text</summary>
           <pre className="max-h-48 overflow-auto px-3 pb-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">{reference}</pre>
         </details>
@@ -75,7 +75,7 @@ export function ReviewPanel({
           return (
             <li
               key={item.field}
-              className={`rounded-xl border p-3 ${item.flagged ? "border-[rgb(255_210_63/0.55)] bg-accent-soft" : "border-border"}`}
+              className={`rounded-chip border p-3 ${item.flagged ? "border-accent-line bg-accent-soft" : "border-border"}`}
             >
               <div className="flex items-baseline justify-between gap-3">
                 <label htmlFor={id} className="font-medium">

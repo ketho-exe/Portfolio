@@ -83,7 +83,7 @@ export default function FlowGraph({ definition, frame, selectedId, badges, onSel
       zoomOnDoubleClick={false}
       preventScrolling={false}
     >
-      <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="rgb(255 255 255 / 0.12)" />
+      <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="var(--border)" />
       {!touch && <Controls showInteractive={false} />}
     </ReactFlow>
   );

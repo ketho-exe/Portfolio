@@ -36,11 +36,11 @@ export const statusGlyph: Record<UiStatus, string> = {
 };
 
 const statusStyle: Record<UiStatus, string> = {
-  idle: "border-white/25 bg-[rgb(20_20_24/0.9)]",
-  running: "border-accent bg-accent-soft shadow-[0_0_0_6px_rgb(255_210_63/0.25)]",
-  success: "border-ok bg-[rgb(18_38_25)]",
-  error: "border-danger bg-[rgb(48_22_24)]",
-  skipped: "border-dashed border-white/25 bg-[rgb(20_20_24/0.6)] opacity-55",
+  idle: "border-border-strong bg-surface-solid",
+  running: "border-accent bg-accent-soft shadow-[0_0_0_6px_var(--accent-hairline)]",
+  success: "border-ok bg-ok-solid",
+  error: "border-danger bg-danger-solid",
+  skipped: "border-dashed border-border-strong bg-surface-solid opacity-55",
   waiting: "border-accent border-dashed bg-accent-soft",
 };
 
@@ -60,7 +60,7 @@ export function StepNodeView({ data }: NodeProps<StepNode>) {
   return (
     <div
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
-      className={`flex cursor-pointer flex-col justify-center rounded-[14px] border-[1.5px] px-3 transition-colors ${statusStyle[status]} ${
+      className={`flex cursor-pointer flex-col justify-center rounded-panel border-[1.5px] px-3 transition-colors ${statusStyle[status]} ${
         selected ? "outline-2 outline-offset-2 outline-accent" : ""
       }`}
     >

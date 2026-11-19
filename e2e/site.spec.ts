@@ -115,6 +115,28 @@ test("the root layout carries Person structured data from the site config", asyn
   });
 });
 
+test("only the home hero has an accent word and an entrance animation", async ({ page }) => {
+  for (const route of routes) {
+    await page.goto(route);
+    const accentWords = page.locator(":is(h1, h2, h3) em");
+    await expect(accentWords).toHaveCount(route === "/" ? 1 : 0);
+    const heroPops = page.locator('section[aria-labelledby="hero-title"] .pop');
+    expect(await page.locator(".pop").count()).toBe(await heroPops.count());
+  }
+});
+
+test("only long case studies show the reading progress bar and contents list", async ({ page }) => {
+  for (const [slug, long] of [
+    ["automation-playground", true],
+    ["facilities-management-app", false],
+  ] as const) {
+    await page.goto(`/projects/${slug}/`);
+    await expect(page.getByRole("navigation", { name: "On this page" })).toHaveCount(long ? 1 : 0);
+    await expect(page.locator(".read-progress")).toHaveCount(long ? 1 : 0);
+    await expect(page.getByRole("link", { name: "Ask me about this" })).toBeVisible();
+  }
+});
+
 test("a project in the index opens its case study", async ({ page }) => {
   await page.goto("/projects/");
   await page.getByRole("link", { name: /Facilities Management App/ }).click();

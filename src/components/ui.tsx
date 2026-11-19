@@ -41,11 +41,6 @@ export function Eyebrow({ children, className = "" }: { children: ReactNode; cla
   return <p className={`font-mono text-xs tracking-[0.08em] text-accent uppercase ${className}`}>{children}</p>;
 }
 
-/** Yellow italic emphasis for serif headlines. */
-export function Em({ children }: { children: ReactNode }) {
-  return <em className="text-accent">{children}</em>;
-}
-
 export function SectionHeading({
   eyebrow,
   title,
@@ -60,7 +55,7 @@ export function SectionHeading({
   return (
     <div className="max-w-3xl">
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h2 id={id} className="mt-2.5 font-serif text-[clamp(40px,4.6vw,64px)] leading-none text-balance">
+      <h2 id={id} className="mt-2.5 font-serif text-display-3 leading-none text-balance">
         {title}
       </h2>
       {children && <p className="mt-4 text-base leading-relaxed text-soft text-pretty">{children}</p>}
@@ -71,7 +66,7 @@ export function SectionHeading({
 /** Note with an icon, for honesty labels ("simulated", "confidential", ...). */
 export function Note({ icon, children, className = "" }: { icon: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <p role="note" className={`glass flex items-start gap-3.5 rounded-[18px] px-5 py-4 text-[15px] leading-relaxed text-soft ${className}`}>
+    <p role="note" className={`glass flex items-start gap-3.5 rounded-panel px-5 py-4 text-[15px] leading-relaxed text-soft ${className}`}>
       <span className="mt-0.5 shrink-0 text-accent">{icon}</span>
       <span>{children}</span>
     </p>
@@ -84,7 +79,7 @@ export function Note({ icon, children, className = "" }: { icon: ReactNode; chil
  */
 export function Placeholder({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-2xl border-2 border-dashed border-border-strong px-4 py-3 font-mono text-xs text-muted">
+    <div className="rounded-panel border-2 border-dashed border-border-strong px-4 py-3 font-mono text-xs text-muted">
       <span className="text-accent">placeholder</span> · {children}
     </div>
   );
