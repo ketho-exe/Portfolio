@@ -6,7 +6,7 @@ import { emailRouting } from "../workflows/email-routing";
 import { toCsv } from "./csv";
 import { decodeHeader, parseEml } from "./eml";
 import { checkFile, documentKind, MAX_TEXT_CHARS, normaliseText } from "./limits";
-import type { ReadResult } from "./read-document";
+import { ReadError, type ReadResult } from "./read-document";
 
 describe("file checks", () => {
   it("recognises kinds by extension, case-insensitively", () => {
@@ -135,8 +135,7 @@ describe("local document reading inside the workflow", () => {
   });
 
   it("shows reader messages meant for visitors, hides anything else", async () => {
-    const visitorError = Object.assign(new Error("This PDF is password-protected."), { name: "ReadError" });
-    expect((await run(fakeReader(visitorError))).error).toBe("This PDF is password-protected.");
+    expect((await run(fakeReader(new ReadError("This PDF is password-protected.")))).error).toBe("This PDF is password-protected.");
     expect((await run(fakeReader(new Error("internal stack detail")))).error).toBe("This document couldn't be read.");
   });
 

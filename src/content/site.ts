@@ -13,7 +13,7 @@ export type SiteConfig = {
   linkedin: string | null;
   github: string | null;
   cvUrl: string | null;
-  /** Production origin, e.g. "https://example.com". Unknown until hosting is chosen; sitemap and absolute share URLs wait for it. */
+  /** Production origin, no trailing slash. Used for the sitemap, robots.txt and absolute share URLs. */
   url: string | null;
 };
 
@@ -29,7 +29,7 @@ export const site: SiteConfig = {
   linkedin: "https://www.linkedin.com/in/szymon-klejny-732a58296/",
   github: "https://github.com/ketho-exe",
   cvUrl: "/cv/szymon-klejny-cv.pdf",
-  url: null,
+  url: "https://portfolio-sklejny.vercel.app",
 };
 
 export const nav = [

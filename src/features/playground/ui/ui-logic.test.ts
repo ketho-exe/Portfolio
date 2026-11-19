@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { runWorkflow } from "../engine";
+import { resumeWorkflow, runWorkflow } from "../engine";
+import { documentProcessing } from "../workflows/document-processing";
 import { expenseApproval } from "../workflows/expense-approval";
 import { workflows } from "../workflows";
 import { canvasHeight, layoutWorkflow, NODE_HEIGHT, NODE_WIDTH } from "./layout";
@@ -21,6 +22,13 @@ describe("layoutWorkflow", () => {
     expect(pos["auto-approve"].x).toBeLessThan(pos.manager.x);
     expect(pos.post.x).toBeLessThan(pos.return.x);
     expect(pos.approved.y).toBeGreaterThan(pos.manager.y);
+  });
+
+  it("keeps a branch that skips a layer clear of the nodes in that layer", () => {
+    const doc = layoutWorkflow(documentProcessing.definition);
+    // confident ─true→ schema passes the review layer: review moves aside, so the edge runs beside it.
+    expect(doc.schema.x).toBe(doc.confident.x);
+    expect(Math.abs(doc.review.x - doc.confident.x)).toBeGreaterThanOrEqual(NODE_WIDTH / 2);
   });
 
   it("never overlaps nodes", () => {
@@ -85,5 +93,21 @@ describe("replayFrame", () => {
     expect(f.statuses.validate).toBe("error");
     expect(f.edges["validate-categorise"]).toBe("not-taken");
     expect(f.statuses.result).toBe("skipped");
+  });
+
+  it("shows a paused review step as waiting, then carries on after the decision", async () => {
+    const doc = documentProcessing.definition;
+    const sample = documentProcessing.samples.find((s) => s.id === "low-confidence")!;
+    const paused = await runWorkflow(doc, sample.input, { adapters: documentProcessing.adapters });
+    const f = replayFrame(doc, paused, paused.events.length);
+    expect(f.done).toBe(true);
+    expect(f.statuses.review).toBe("waiting");
+    expect(f.statuses.schema).toBe("idle");
+    expect(f.edges["review-schema"]).toBe("idle");
+
+    const resumed = await resumeWorkflow(doc, paused, { action: "approve" });
+    const g = replayFrame(doc, resumed, paused.events.length);
+    expect(g.done).toBe(false);
+    expect(replayFrame(doc, resumed, resumed.events.length).statuses.result).toBe("success");
   });
 });

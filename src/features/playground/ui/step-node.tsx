@@ -10,7 +10,7 @@ export type StepNodeData = {
   nodeType: NodeType;
   status: UiStatus;
   selected: boolean;
-  /** "simulated" or "on device": how an integration step actually runs. */
+  /** "simulated", "on device" or "you": how a step actually runs. */
   badge?: string;
 };
 export type StepNode = Node<StepNodeData, "step">;
@@ -22,6 +22,7 @@ export const typeLabel: Record<NodeType, string> = {
   transform: "Transform",
   classify: "Classify",
   integration: "Integration",
+  review: "Review",
   output: "Output",
 };
 
@@ -31,6 +32,7 @@ export const statusGlyph: Record<UiStatus, string> = {
   success: "✓",
   error: "✕",
   skipped: "–",
+  waiting: "‖",
 };
 
 const statusStyle: Record<UiStatus, string> = {
@@ -39,6 +41,7 @@ const statusStyle: Record<UiStatus, string> = {
   success: "border-ok bg-[rgb(18_38_25)]",
   error: "border-danger bg-[rgb(48_22_24)]",
   skipped: "border-dashed border-white/25 bg-[rgb(20_20_24/0.6)] opacity-55",
+  waiting: "border-accent border-dashed bg-accent-soft",
 };
 
 const glyphColour: Record<UiStatus, string> = {
@@ -47,6 +50,7 @@ const glyphColour: Record<UiStatus, string> = {
   success: "text-ok",
   error: "text-danger",
   skipped: "text-muted",
+  waiting: "text-accent",
 };
 
 const handle = "!size-1.5 !min-w-0 !min-h-0 !border-0 !bg-muted";

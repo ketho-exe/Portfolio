@@ -48,7 +48,7 @@ test("a project in the index opens its case study", async ({ page }) => {
 test("the project filter narrows the index", async ({ page }) => {
   await page.goto("/projects/");
   await page.getByRole("button", { name: /Personal & demos/ }).click();
-  await expect(page.getByRole("status")).toHaveText(/Showing 3 of 7/);
+  await expect(page.getByRole("status")).toHaveText(/Showing 1 of 5/);
   await expect(page.getByRole("link", { name: /Automation Playground/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Facilities Management App/ })).toHaveCount(0);
 });

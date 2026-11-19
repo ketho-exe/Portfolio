@@ -5,7 +5,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { makeFixtures } from "./fixtures/make-fixtures";
 
 // Real documents, read in the browser. Fixtures are rendered by the browser at test time.
-const dir = join(tmpdir(), "portfolio-e2e-fixtures");
+// One folder per worker process: workers regenerate fixtures, and must not rewrite files another is reading.
+const dir = join(tmpdir(), `portfolio-e2e-fixtures-${process.pid}`);
 test.beforeAll(async ({ browser }) => makeFixtures(browser, dir));
 
 /** Fails the test if the page talks to any origin other than the site, or logs errors/CSP violations. */
@@ -55,6 +56,12 @@ const expectInvoiceFields = async (page: Page) => {
     await expect(result).toContainText(text);
   }
 };
+
+test("pages carry the security headers from vercel.json", async ({ page }) => {
+  const headers = (await page.goto("/playground/"))!.headers();
+  expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(headers["x-content-type-options"]).toBe("nosniff");
+});
 
 test("the page's security policy blocks requests to other sites", async ({ page }) => {
   await page.goto("/playground/");

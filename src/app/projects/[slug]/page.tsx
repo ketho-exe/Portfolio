@@ -35,12 +35,12 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
   const rest = sections.slice(splitAt);
 
   const isProfessional = project.kind === "Professional work";
-  const isUnfinished = project.status === "Planned" || project.status === "In progress";
+  const isUnfinished = project.status === "In progress";
   const meta = [
     ["Organisation", project.organisation],
     ["Period", project.period],
     ["Type", project.kind],
-    [isUnfinished ? "Planned stack" : "Stack", project.technologies.join(" · ")],
+    ["Stack", project.technologies.join(" · ")],
   ].filter((m): m is [string, string] => Boolean(m[1]));
 
   const i = projects.indexOf(project);
@@ -141,8 +141,8 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
 
         {isUnfinished && (
           <Note icon={<Icon name="info" size={20} />} className="mt-5">
-            This project is {project.status.toLowerCase()}. This page describes its aims and approach and will be updated
-            with implementation details, testing and outcomes as the work is completed.
+            This project is still in progress. This page will be updated with testing and outcomes as the work is
+            completed.
           </Note>
         )}
       </header>

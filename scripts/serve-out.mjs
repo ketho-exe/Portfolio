@@ -1,7 +1,8 @@
 // Minimal static server for the exported site (`out/`), used by Playwright.
 // Mimics a static host: index.html for directories, trailing-slash redirects, 404.html with status 404,
-// gzip for text, and long caching for hashed assets (so Lighthouse numbers resemble production).
-import { createReadStream, existsSync, statSync } from "node:fs";
+// gzip for text, long caching for hashed assets (so Lighthouse numbers resemble production), and the
+// security headers from vercel.json (so e2e tests run under the production CSP).
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { createGzip } from "node:zlib";
@@ -24,10 +25,18 @@ const types = {
   ".pdf": "application/pdf",
 };
 
+// vercel.json `source` patterns here are simple enough to use as regular expressions.
+const hostHeaders = JSON.parse(readFileSync("vercel.json", "utf8")).headers.map((rule) => ({
+  test: new RegExp(`^${rule.source}$`),
+  headers: Object.fromEntries(rule.headers.map((h) => [h.key.toLowerCase(), h.value])),
+}));
+
 const compressible = new Set([".html", ".js", ".mjs", ".css", ".json", ".txt", ".xml", ".svg", ".wasm"]);
 
 function send(res, status, file, req) {
+  const path = new URL(req?.url ?? "/", "http://localhost").pathname;
   const headers = { "content-type": types[extname(file)] ?? "application/octet-stream" };
+  for (const rule of hostHeaders) if (rule.test.test(path)) Object.assign(headers, rule.headers);
   if (req?.url?.startsWith("/_next/static/")) headers["cache-control"] = "public, max-age=31536000, immutable";
   const gzip = compressible.has(extname(file)) && /gzip/.test(req?.headers["accept-encoding"] ?? "");
   if (gzip) headers["content-encoding"] = "gzip";

@@ -10,7 +10,9 @@ export type ReadResult = { text: string; method: ReadMethod; pages: number; trun
 export type ReadProgress = (message: string, fraction?: number) => void;
 
 /** Errors whose message is safe and useful to show the visitor. */
-export class ReadError extends Error {}
+export class ReadError extends Error {
+  override name = "ReadError";
+}
 
 const vendor = (path: string) => new URL(`/vendor/${path}`, window.location.origin).href;
 

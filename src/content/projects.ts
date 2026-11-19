@@ -3,12 +3,11 @@
  * - Never invent outcomes, metrics, users or commercial results. Figures here come from the owner's CV.
  * - `kind` must honestly distinguish professional work from demos and experiments.
  * - Professional work is anonymised: no proprietary code, data, screenshots or named sub-businesses.
- * - Planned projects describe intent only; replace with real detail as work lands.
  */
 
 export type ProjectCategory = "Web application" | "Automation" | "Integration" | "AI" | "Low-code";
 export type ProjectKind = "Professional work" | "Personal project" | "Recreated demonstration" | "Experiment";
-export type ProjectStatus = "Planned" | "In progress" | "Live" | "Delivered";
+export type ProjectStatus = "In progress" | "Live" | "Delivered";
 
 /** Case-study sections, rendered in this order when present. */
 export const caseStudySections = [
@@ -151,7 +150,7 @@ export const projects: Project[] = [
         "Built and maintained the pipeline as the firm's sole automation developer, and wrote documentation covering its architecture, data flow, dependencies and failure recovery.",
       ],
       outcome: [
-        "No documents, client data or code are shown. The AI Document Processor project below will be a public, synthetic-data recreation of this kind of workflow.",
+        "No documents, client data or code are shown. The playground's invoice extraction workflow is a public, synthetic-data take on the same kind of intake, running entirely in the browser.",
       ],
     },
   },
@@ -184,7 +183,7 @@ export const projects: Project[] = [
     },
   },
 
-  // ── Personal projects (in development) ──────────────────────────────────
+  // ── Personal projects ──────────────────────────────────
   {
     slug: "automation-playground",
     name: "Automation Playground",
@@ -192,7 +191,7 @@ export const projects: Project[] = [
       "Interactive business workflows you can inspect and run step by step, powered by a small typed execution engine in the browser.",
     categories: ["Automation", "Web application"],
     kind: "Personal project",
-    status: "In progress",
+    status: "Live",
     technologies: ["Next.js", "TypeScript", "React Flow", "Zod", "PDF.js", "Tesseract.js", "Vitest", "Playwright"],
     featured: false,
     links: { demo: "/playground/" },
@@ -204,68 +203,29 @@ export const projects: Project[] = [
         "Automation work is usually invisible because it lives in back-office tools. Screenshots of workflow builders say little about the logic behind them, and real client workflows can't be shown at all.",
       ],
       goals: [
-        "Make workflow logic visible and interactive: validation, conditions, branching and integration steps.",
+        "Make workflow logic visible and interactive: validation, conditions, branching, integration steps and human review.",
         "Run entirely in the browser with no API keys or server. Where a step can't really run here, it's a deterministic, clearly labelled simulation.",
       ],
       solution: [
         "Workflows are stored as typed data and validated with schemas. A TypeScript engine executes nodes in dependency order and records each node's input, output and status. React Flow renders the graph and execution state.",
-        "Three workflows: expense approval (recreated from professional work), email routing with keyword rules, and invoice extraction that reads each field with rules and scores its confidence.",
+        "Three workflows: expense approval (recreated from professional work), email routing with keyword rules, and invoice extraction that reads each field with rules and scores its confidence. When a required field is uncertain, the invoice run pauses and the visitor reviews it: each field is shown with its confidence, and corrections carry through to validation and the result.",
       ],
       architecture: [
-        "The engine is plain TypeScript with no UI dependencies: a Zod schema with seven node types (trigger, validate, condition, transform, classify, integration, output), a graph validator and an async runner. React Flow renders the graph; the UI replays the engine's event log to animate each step.",
+        "The engine is plain TypeScript with no UI dependencies: a Zod schema with eight node types (trigger, validate, condition, transform, classify, integration, review, output), a graph validator and an async runner. A review step pauses the run and returns its state; a separate resume call applies the person's decision and carries on from there. React Flow renders the graph; the UI replays the engine's event log to animate each step.",
         "Integrations sit behind adapters. In the browser, an adapter either does real work on the device (reading a document, extracting fields) or is a deterministic mock labelled as simulated (accounting, helpdesk). A real integration would run server-side behind the same interface.",
       ],
       implementation: [
         "Workflows are validated before they run: exactly one trigger, every edge pointing at a real step, branch labels on condition edges, no loops, and every step reachable. Field paths that could reach JavaScript object internals are rejected.",
-        "Steps run in dependency order. A condition makes only its matching branch live, so the other branch is marked skipped, and two branches can rejoin. A failure stops the run safely, and each step has a timeout.",
+        "Steps run in dependency order. A condition makes only its matching branch live, so the other branch is marked skipped, and two branches can rejoin. A failure stops the run safely, and each step has a timeout. In review, only the fields the step lists can change, and each value is checked against its type before the run continues.",
         "Visitors can run the invoice workflow on their own PDF or image, and email routing on their own .eml file. PDF.js reads the PDF's text layer; scans and images go through Tesseract.js OCR. Both libraries and the OCR model are served from this site and loaded only when needed. Nothing is uploaded or saved, and a Content-Security-Policy stops the page from sending data to any other server. Results download as JSON or CSV.",
       ],
       testing: [
-        "Vitest covers graph validation, branching, joins, failures, timeouts and determinism. Every sample input in the playground stores its expected outcome, and the tests check it, so a sample's label can't drift from what it does.",
+        "Vitest covers graph validation, branching, joins, failures, timeouts, pausing and resuming, and determinism. Every sample input in the playground stores its expected outcome, and the tests check it, so a sample's label can't drift from what it does.",
         "Playwright runs real files through the built site: a PDF with a text layer, a scanned PDF, a PNG and an .eml file. The test fails if the page contacts any other host.",
       ],
       outcome: [
-        "Three workflows are live in the playground, each with sample inputs covering success, branching and failure cases.",
+        "Three workflows are live in the playground, each with sample inputs covering success, branching, human review and failure cases.",
         "Limitations: no loops, parallel steps or custom code, by design. Accounting, approval and helpdesk steps are simulated, and nothing connects to real services. Field extraction uses rules, not an AI model, so it handles clearly labelled invoices best.",
-      ],
-    },
-  },
-  {
-    slug: "operations-dashboard",
-    name: "Business Operations Dashboard",
-    summary:
-      "A full-stack dashboard for projects, tasks and activity history with CRUD operations and data visualisation.",
-    categories: ["Web application"],
-    kind: "Personal project",
-    status: "Planned",
-    technologies: ["Next.js", "TypeScript", "PostgreSQL"],
-    featured: false,
-    caseStudy: {
-      overview: [
-        "A realistic internal tool built on sample data to show full-stack development: data modelling, CRUD, activity history and charts.",
-      ],
-      goals: [
-        "Show database design and server-side data handling alongside a usable interface.",
-        "Keep hosting at zero cost, and only add authentication if it adds real value.",
-      ],
-    },
-  },
-  {
-    slug: "ai-document-processor",
-    name: "AI Document Processor",
-    summary:
-      "Turns sample documents into validated structured data. Processing is deterministic and mocked by default, with optional real model calls.",
-    categories: ["AI", "Automation"],
-    kind: "Recreated demonstration",
-    status: "Planned",
-    technologies: ["TypeScript", "Zod"],
-    featured: false,
-    caseStudy: {
-      overview: [
-        "A public recreation of document intake work, using synthetic documents. It extracts structured fields, validates them against a schema and handles errors clearly.",
-      ],
-      goals: [
-        "Work without paid APIs by default. Any real AI execution must be optional and protected against unexpected costs.",
       ],
     },
   },

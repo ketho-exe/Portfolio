@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const how = [
   [
     "A typed engine",
-    "Workflows are data, checked with a Zod schema and a graph validator before they run. The runner is async, never throws, and gives each step a timeout.",
+    "Workflows are data, checked with a Zod schema and a graph validator before they run. The runner is async, never throws, gives each step a timeout, and can pause at a review step until a person decides.",
   ],
   [
     "Honest adapters",
@@ -30,7 +30,7 @@ export default function PlaygroundPage() {
     <Container wide className="pt-14 pb-24">
       <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6">
         <div>
-          <Eyebrow>Personal project · In progress</Eyebrow>
+          <Eyebrow>Personal project · Live</Eyebrow>
           <h1 className="mt-3 font-serif text-[clamp(52px,7vw,104px)] leading-[0.95]">
             Automation <Em>Playground</Em>
           </h1>

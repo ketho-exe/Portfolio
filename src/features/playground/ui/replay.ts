@@ -1,6 +1,6 @@
 import type { RunEvent, RunResult, WorkflowInput } from "../engine";
 
-export type UiStatus = "idle" | "running" | "success" | "error" | "skipped";
+export type UiStatus = "idle" | "running" | "success" | "error" | "skipped" | "waiting";
 export type EdgeState = "idle" | "taken" | "not-taken";
 
 export type ReplayFrame = {
@@ -10,9 +10,18 @@ export type ReplayFrame = {
   done: boolean;
 };
 
+const levelStatus: Record<RunEvent["level"], UiStatus> = {
+  info: "running",
+  success: "success",
+  error: "error",
+  skip: "skipped",
+  wait: "waiting",
+};
+
 /**
  * What the UI should show after the first `cursor` events of a finished run.
  * The engine runs instantly; the UI steps a cursor through its event log to animate progress.
+ * A run paused for review is "done" once the cursor reaches the pause; resuming appends events.
  */
 export function replayFrame(
   def: Pick<WorkflowInput, "nodes" | "edges">,
@@ -26,8 +35,7 @@ export function replayFrame(
   const events = result.events.slice(0, Math.max(0, cursor));
   for (const ev of events) {
     if (!ev.nodeId) continue;
-    statuses[ev.nodeId] =
-      ev.level === "info" ? "running" : ev.level === "success" ? "success" : ev.level === "error" ? "error" : "skipped";
+    statuses[ev.nodeId] = levelStatus[ev.level];
   }
 
   for (const e of def.edges) {

@@ -2,7 +2,7 @@
 
 Personal portfolio and digital studio: web development, software solutions, business automation and integrations.
 
-**Status:** in development, not yet deployed. Site, case studies, About content and the automation playground are in place.
+**Status:** deployed on Vercel (https://portfolio-sklejny.vercel.app), currently behind Vercel Authentication. Site, case studies, About content and the automation playground are in place.
 
 ## Stack
 
@@ -57,18 +57,17 @@ None yet. A `.env.example` will be added with the first one.
 
 ## Deployment
 
-Not deployed yet. `npm run build` produces a static site in `out/` that can be served by any static host. Hosting choice: see the project vault (`Hosting and Costs`).
+Hosted on Vercel, deployed from `main`. `npm run build` produces a static site in `out/` that any static host can serve. `vercel.json` sets the security headers (CSP, `frame-ancestors`, `nosniff`, referrer and permissions policies); `scripts/serve-out.mjs` applies the same headers in e2e tests.
 
 Host requirements for the playground's file intake:
 
 - Serve `.mjs` as `text/javascript` and `.wasm` as `application/wasm`, or the PDF reader won't load.
 - `out/vendor/` holds about 19 MB of PDF.js / Tesseract.js assets (fetched only when a visitor reads a file). They are copied from `node_modules` at build time and not committed.
-- Production pages carry a Content-Security-Policy `<meta>` tag (`connect-src 'self'`). If the host adds its own CSP header, keep it at least as strict, and allow `worker-src 'self'` and `blob:` images.
+- Production pages carry a Content-Security-Policy `<meta>` tag (`connect-src 'self'`), and `vercel.json` sends the same policy as a header. Keep the two in step. The header also applies to the PDF.js and Tesseract workers, so it needs `'wasm-unsafe-eval'`. On another host, copy these headers.
 
 ## Known limitations
 
 - Professional case studies are anonymised: no screenshots or code.
-- The dashboard and document processor projects are planned. Their pages describe intent only.
 - Playground file intake: up to 10 MB, the first 5 PDF pages (3 for OCR), English OCR only. Field extraction is rule-based, not AI.
 - After changing `generateStaticParams`, restart `npm run dev`, or new slugs 404 in dev.
 - No contact form yet (a static export has no server; this needs a small serverless endpoint later).

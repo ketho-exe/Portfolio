@@ -117,6 +117,5 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
 
 function where(p: Project) {
   if (p.organisation) return [p.organisation.replace(" Chartered Accountants", ""), p.period?.replace("2024–2025", "2024–25")].filter(Boolean).join(" · ");
-  if (p.links?.demo) return "Live demo";
-  return p.status === "Planned" ? "Intent only" : "";
+  return p.links?.demo ? "Live demo" : "";
 }

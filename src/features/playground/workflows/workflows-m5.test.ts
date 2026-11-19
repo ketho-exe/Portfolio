@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { extractInvoiceFields, parseDate } from "../adapters/documents";
 import { simulatedReference } from "../adapters/reference";
-import { runWorkflow } from "../engine";
+import { resumeWorkflow, reviewItems, runWorkflow, validateWorkflow, type NodeOf, type Workflow } from "../engine";
 import { documentProcessing } from "./document-processing";
 import { emailRouting } from "./email-routing";
 import type { PlaygroundWorkflow } from "./types";
@@ -80,10 +80,39 @@ describe("invoice extraction specifics", () => {
     expect(f.currency).toEqual({ value: null, confidence: 0 });
   });
 
-  it("schema validation explains what is missing from a non-invoice", async () => {
-    const r = await runSample(documentProcessing, "delivery-note");
-    expect(r.nodes.schema.details).toEqual(["Invoice number not found", "Total not found", "Currency not recognised"]);
-    expect(r.nodes.confident.status).toBe("skipped");
+  it("uncertain fields pause for review, flagged for the reviewer", async () => {
+    const r = await runSample(documentProcessing, "low-confidence");
+    expect(r.status).toBe("waiting");
+    const wf = (validateWorkflow(documentProcessing.definition) as { workflow: Workflow }).workflow;
+    const node = wf.nodes.find((n) => n.id === "review") as NodeOf<"review">;
+    const flagged = reviewItems(node, r.nodes.review.input!).filter((i) => i.flagged).map((i) => i.label);
+    expect(flagged).toEqual(["Supplier", "Invoice number", "Invoice date", "Due date", "Net", "Total"]);
+    expect(r.nodes.schema).toBeUndefined();
+  });
+
+  it("a confirmed review with corrections is validated and queued", async () => {
+    const paused = await runSample(documentProcessing, "low-confidence");
+    const r = await resumeWorkflow(documentProcessing.definition, paused, {
+      action: "approve",
+      values: { "extracted.invoiceNumber": "NCS-88213", "extracted.total": "504.00", "extracted.net": "420" },
+    });
+    expect(r.status).toBe("success");
+    expect(r.output).toMatchObject({
+      status: "Ready for approval",
+      nextStep: "Send NCS-88213 from Northgate Cleaning Services to the approval workflow",
+      extracted: { invoiceNumber: "NCS-88213", net: 420, total: 504 },
+      review: { decision: "approved", corrected: ["invoiceNumber", "net"] },
+    });
+  });
+
+  it("a non-invoice can be rejected in review, or is stopped by the schema if confirmed", async () => {
+    const paused = await runSample(documentProcessing, "delivery-note");
+    const rejected = await resumeWorkflow(documentProcessing.definition, paused, { action: "reject", reason: "Not an invoice" });
+    expect(rejected).toMatchObject({ status: "failed", error: "Rejected in review: Not an invoice" });
+    expect(rejected.nodes.schema.status).toBe("skipped");
+
+    const confirmed = await resumeWorkflow(documentProcessing.definition, paused, { action: "approve" });
+    expect(confirmed.nodes.schema.details).toEqual(["Invoice number not found", "Total not found", "Currency not recognised"]);
   });
 
   it("sample text extraction is labelled simulated; rule-based field extraction is real", async () => {

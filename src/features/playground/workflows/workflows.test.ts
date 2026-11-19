@@ -30,6 +30,7 @@ describe.each(workflows.map((w) => [w.definition.name, w] as const))("%s", (_, w
     if (sample.expected.failsAt) {
       expect(r.nodes[sample.expected.failsAt].status).toBe("error");
     }
+    if (sample.expected.waitsAt) expect(r.waitingAt).toBe(sample.expected.waitsAt);
     if (sample.expected.output) expect(r.output).toMatchObject(sample.expected.output);
   });
 });

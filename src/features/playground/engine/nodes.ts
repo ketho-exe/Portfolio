@@ -36,6 +36,9 @@ export async function executeNode(node: WorkflowNode, input: Data, adapters: Ada
       return runIntegration(node, input, adapters);
     case "output":
       return runOutput(node, input);
+    case "review":
+      // The runner pauses here instead; resumeWorkflow applies the person's decision.
+      return { ok: false, error: "This step waits for a person." };
   }
 }
 

@@ -12,6 +12,8 @@ export type SampleInput = {
     status: RunResult["status"];
     /** Node that fails, when status is "failed". */
     failsAt?: string;
+    /** Review node the run pauses at, when status is "waiting". */
+    waitsAt?: string;
     /** Subset of the final output. */
     output?: Data;
   };

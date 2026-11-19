@@ -11,7 +11,7 @@ const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  // Without a known domain, Next falls back to localhost for absolute URLs (fine for dev, set site.url before launch).
+  // Absolute URLs for Open Graph images and links.
   metadataBase: site.url ? new URL(site.url) : undefined,
   title: { default: `${site.name} · ${site.role}`, template: `%s · ${site.name}` },
   description: site.description,
@@ -28,7 +28,8 @@ export const viewport: Viewport = {
  * Content-Security-Policy (production only; dev needs eval and websockets for hot reload).
  * connect-src 'self' means page scripts can only make requests to this site, so a visitor's document
  * can't be sent anywhere else. Inline scripts/styles are needed by Next's static export and React Flow.
- * Static export can't set headers, so this is a <meta> tag; frame-ancestors etc. belong in host headers.
+ * Static export can't set headers, so this is a <meta> tag. vercel.json sends the same policy as a header
+ * (plus frame-ancestors and 'wasm-unsafe-eval' for the OCR worker); keep the two in step.
  */
 const csp = [
   "default-src 'self'",

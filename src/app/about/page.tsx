@@ -50,11 +50,6 @@ export default function AboutPage() {
           </div>
         </div>
         <aside aria-label="At a glance" className="flex min-w-0 flex-[1_1_340px] flex-col gap-4">
-          {/* Placeholder until the owner supplies a photo. */}
-          <figure className="flex aspect-[4/5] max-h-[420px] flex-col items-center justify-center gap-2.5 rounded-[28px] border-2 border-dashed border-border-strong bg-white/3">
-            <Icon name="user" size={44} strokeWidth={1.5} className="text-muted" />
-            <figcaption className="font-mono text-xs text-muted">Photo · not supplied yet</figcaption>
-          </figure>
           <dl className="glass rounded-3xl px-5 py-2">
             {[
               ["Role", site.role],

@@ -95,6 +95,27 @@ const IntegrationConfig = z.strictObject({
   timeoutMs: z.number().int().min(100).max(120_000).optional(),
 });
 
+/** A person checks (and may correct) these fields before the run continues. */
+const ReviewField = z.strictObject({
+  field: PathSchema,
+  label: z.string().min(1),
+  kind: z.enum(["text", "number", "date"]).default("text"),
+  /** Allowed values; the reviewer picks one. */
+  options: z.array(z.string().min(1)).min(1).max(20).optional(),
+  /** Where the 0–1 confidence for this field is, if the data has one. */
+  confidence: PathSchema.optional(),
+});
+
+const ReviewConfig = z.strictObject({
+  fields: z.array(ReviewField).min(1).max(20),
+  /** Fields with confidence below this are flagged for the reviewer. */
+  threshold: z.number().min(0).max(1).default(0.8),
+  /** Shown to the reviewer for reference (for example the document's text). */
+  reference: PathSchema.optional(),
+  /** Where the decision is recorded. */
+  into: PathSchema.default("review"),
+});
+
 const OutputConfig = z.strictObject({ pick: z.array(PathSchema).optional() });
 
 // ── Nodes and edges ───────────────────────────────────────────────────────
@@ -112,6 +133,7 @@ export const NodeSchema = z.discriminatedUnion("type", [
   z.strictObject({ ...base, type: z.literal("transform"), config: TransformConfig }),
   z.strictObject({ ...base, type: z.literal("classify"), config: ClassifyConfig }),
   z.strictObject({ ...base, type: z.literal("integration"), config: IntegrationConfig }),
+  z.strictObject({ ...base, type: z.literal("review"), config: ReviewConfig }),
   z.strictObject({ ...base, type: z.literal("output"), config: OutputConfig.default({}) }),
 ]);
 

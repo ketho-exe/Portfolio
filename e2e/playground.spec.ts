@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 async function runToEnd(page: Page) {
@@ -30,13 +31,61 @@ test("email routing escalates an urgent email", async ({ page }) => {
   await expect(page.getByText('"ticket.priority": "P1"')).toBeVisible();
 });
 
-test("invoice extraction stops a non-invoice and explains why", async ({ page }) => {
+async function pauseForReview(page: Page, sample: string) {
   await page.getByRole("button", { name: "Invoice extraction" }).click();
-  await page.getByLabel("Sample input").selectOption({ label: "Not an invoice" });
+  await page.getByLabel("Sample input").selectOption({ label: sample });
   await runToEnd(page);
+  await expect(page.getByRole("status")).toHaveText(/waiting for your review/);
+  await expect(page.getByRole("tab", { name: "Review" })).toHaveAttribute("aria-selected", "true");
+}
+
+async function finish(page: Page) {
+  const skip = page.getByRole("button", { name: "Skip to end" });
+  if (await skip.isVisible().catch(() => false)) await skip.click().catch(() => {});
+  await expect(page.getByRole("status")).toHaveText(/^(Completed|Failed)$/);
+}
+
+test("invoice extraction pauses for review, and corrections carry through", async ({ page }) => {
+  await pauseForReview(page, "Unclear layout");
+  const panel = page.getByRole("tabpanel");
+  await expect(panel.getByText("Not found · check")).toHaveCount(2); // due date and net
+  const number = panel.getByLabel("Invoice number");
+  await expect(number).toHaveValue("88213");
+
+  await panel.getByLabel("Total").fill("five hundred");
+  await panel.getByRole("button", { name: "Confirm and continue" }).click();
+  await expect(panel.getByText("Total must be a number")).toBeVisible();
+  await expect(panel.getByLabel("Total")).toBeFocused();
+
+  await panel.getByLabel("Total").fill("504.00");
+  await number.fill("NCS-88213");
+  await panel.getByRole("button", { name: "Confirm and continue" }).click();
+  await finish(page);
+  await expect(page.getByRole("status")).toHaveText("Completed");
+  await expect(page.getByText('"invoiceNumber": "NCS-88213"')).toBeVisible();
+  await expect(page.getByText('"status": "Ready for approval"')).toBeVisible();
+});
+
+test("a non-invoice can be rejected in review", async ({ page }) => {
+  await pauseForReview(page, "Not an invoice");
+  await page.getByRole("button", { name: "Reject document" }).click();
+  await finish(page);
   await expect(page.getByRole("status")).toHaveText("Failed");
-  await expect(page.getByText("Stopped at", { exact: false })).toBeVisible();
+  await expect(page.locator("p", { hasText: "Stopped at" })).toContainText("Rejected in review.");
+});
+
+test("a confirmed non-invoice is stopped by schema validation", async ({ page }) => {
+  await pauseForReview(page, "Not an invoice");
+  await page.getByRole("button", { name: "Confirm and continue" }).click();
+  await finish(page);
+  await expect(page.getByRole("status")).toHaveText("Failed");
   await expect(page.getByRole("listitem").filter({ hasText: "Invoice number not found" })).toBeVisible();
+});
+
+test("the review form has no axe violations", async ({ page }) => {
+  await pauseForReview(page, "Unclear layout");
+  const { violations } = await new AxeBuilder({ page }).include("[role=tabpanel]").withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(violations.map((v) => v.id)).toEqual([]);
 });
 
 test("selecting a step shows what it received and produced", async ({ page }) => {

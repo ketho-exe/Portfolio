@@ -8,15 +8,17 @@ import type { PlaygroundWorkflow } from "./types";
  * Uploads: the visitor's own PDF or image, read on their device with PDF.js / Tesseract.js OCR.
  * Field extraction is a real rule-based parser with confidence scores (no AI model).
  *
- * receive → check-file → extract-text → extract-fields → schema → confident? ─true→ queue ──┐
- *                                                                        └false→ review ─┴→ result
+ * Low-confidence results pause for a person (the visitor) to check and correct, then are validated.
+ *
+ * receive → check-file → extract-text → extract-fields → confident? ─true──────────┐
+ *                                                                  └false→ review ─┴→ schema → queue → result
  */
 export const documentProcessing: PlaygroundWorkflow = {
   definition: {
     id: "document-processing",
     name: "Invoice extraction",
     description:
-      "A supplier invoice is checked and its text extracted, then rule-based extraction reads each field and scores its confidence. The result is validated against a schema, then queued for approval or sent to a person to review. Try a sample, or your own PDF or image: it's read on your device and never uploaded.",
+      "A supplier invoice is checked and its text extracted, then rule-based extraction reads each field and scores its confidence. If any required field is uncertain, the run pauses for you to check and correct it. The result is validated against a schema and queued for approval. Try a sample, or your own PDF or image: it's read on your device and never uploaded.",
     nodes: [
       {
         id: "receive",
@@ -60,6 +62,35 @@ export const documentProcessing: PlaygroundWorkflow = {
         config: { adapter: "extract.invoiceFields" },
       },
       {
+        id: "confident",
+        type: "condition",
+        label: "Confident enough?",
+        description: "Every required field must have been read with at least 0.8 confidence.",
+        config: { rules: [{ field: "extraction.lowestConfidence", op: "gte", value: 0.8 }] },
+      },
+      {
+        id: "review",
+        type: "review",
+        label: "Check uncertain fields",
+        description:
+          "A real pause for a person: you. Each field is shown with its confidence; correct anything wrong, then confirm or reject the document.",
+        config: {
+          fields: [
+            { field: "extracted.supplier", label: "Supplier", confidence: "extraction.confidence.supplier" },
+            { field: "extracted.invoiceNumber", label: "Invoice number", confidence: "extraction.confidence.invoiceNumber" },
+            { field: "extracted.invoiceDate", label: "Invoice date", kind: "date", confidence: "extraction.confidence.invoiceDate" },
+            { field: "extracted.dueDate", label: "Due date", kind: "date", confidence: "extraction.confidence.dueDate" },
+            { field: "extracted.currency", label: "Currency", options: ["GBP", "EUR", "USD"], confidence: "extraction.confidence.currency" },
+            { field: "extracted.net", label: "Net", kind: "number", confidence: "extraction.confidence.net" },
+            { field: "extracted.vat", label: "VAT", kind: "number", confidence: "extraction.confidence.vat" },
+            { field: "extracted.total", label: "Total", kind: "number", confidence: "extraction.confidence.total" },
+          ],
+          threshold: 0.8,
+          reference: "text",
+          into: "review",
+        },
+      },
+      {
         id: "schema",
         type: "validate",
         label: "Validate against schema",
@@ -82,13 +113,6 @@ export const documentProcessing: PlaygroundWorkflow = {
         },
       },
       {
-        id: "confident",
-        type: "condition",
-        label: "Confident enough?",
-        description: "Every required field must have been read with at least 0.8 confidence.",
-        config: { rules: [{ field: "extraction.lowestConfidence", op: "gte", value: 0.8 }] },
-      },
-      {
         id: "queue",
         type: "transform",
         label: "Queue for approval",
@@ -103,33 +127,22 @@ export const documentProcessing: PlaygroundWorkflow = {
         },
       },
       {
-        id: "review",
-        type: "transform",
-        label: "Send to human review",
-        config: {
-          assign: [
-            { field: "status", value: { literal: "Needs human review" } },
-            { field: "nextStep", value: { template: "Check low-confidence fields: {{extraction.lowConfidenceFields}}" } },
-          ],
-        },
-      },
-      {
         id: "result",
         type: "output",
         label: "Structured result",
-        config: { pick: ["fileName", "status", "nextStep", "extracted", "extraction.lowestConfidence"] },
+        config: { pick: ["fileName", "status", "nextStep", "extracted", "extraction.lowestConfidence", "review"] },
       },
     ],
     edges: [
       { id: "receive-check", source: "receive", target: "check-file" },
       { id: "check-extract", source: "check-file", target: "extract-text" },
       { id: "extract-fields", source: "extract-text", target: "extract-fields" },
-      { id: "fields-schema", source: "extract-fields", target: "schema" },
-      { id: "schema-confident", source: "schema", target: "confident" },
-      { id: "confident-queue", source: "confident", target: "queue", sourceHandle: "true" },
+      { id: "fields-confident", source: "extract-fields", target: "confident" },
+      { id: "confident-schema", source: "confident", target: "schema", sourceHandle: "true" },
       { id: "confident-review", source: "confident", target: "review", sourceHandle: "false" },
+      { id: "review-schema", source: "review", target: "schema" },
+      { id: "schema-queue", source: "schema", target: "queue" },
       { id: "queue-result", source: "queue", target: "result" },
-      { id: "review-result", source: "review", target: "result" },
     ],
   },
 
@@ -189,7 +202,7 @@ export const documentProcessing: PlaygroundWorkflow = {
     {
       id: "low-confidence",
       label: "Unclear layout",
-      description: "No field labels, so supplier, reference, date and total are guesses. It goes to a person to check.",
+      description: "No field labels, so supplier, reference, date and total are guesses. The run pauses for you to check them.",
       input: {
         fileName: "scan-0412.png",
         receivedVia: "scanner",
@@ -205,19 +218,12 @@ export const documentProcessing: PlaygroundWorkflow = {
           "Amount payable                £504.00",
         ].join("\n"),
       },
-      expected: {
-        status: "success",
-        output: {
-          status: "Needs human review",
-          nextStep: "Check low-confidence fields: supplier, invoiceNumber, invoiceDate, total",
-          extracted: { supplier: "Northgate Cleaning Services", invoiceNumber: "88213", invoiceDate: "2026-03-03", total: 504 },
-        },
-      },
+      expected: { status: "waiting", waitsAt: "review" },
     },
     {
       id: "delivery-note",
       label: "Not an invoice",
-      description: "A delivery note sent in as an invoice. There's no invoice number, total or currency, so schema validation stops it.",
+      description: "A delivery note sent in as an invoice. Invoice number, total and currency are missing, so it pauses for you: reject it, or confirm it and see schema validation stop it.",
       input: {
         fileName: "dn-5520.pdf",
         receivedVia: "upload",
@@ -232,7 +238,7 @@ export const documentProcessing: PlaygroundWorkflow = {
           "Received by: ____________",
         ].join("\n"),
       },
-      expected: { status: "failed", failsAt: "schema" },
+      expected: { status: "waiting", waitsAt: "review" },
     },
     {
       id: "no-text",

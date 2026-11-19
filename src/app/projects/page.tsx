@@ -6,7 +6,7 @@ import { getProject, projects } from "@/content/projects";
 
 export const metadata: Metadata = {
   title: "Work",
-  description: "Professional automation, integration and web application work, plus personal projects in development.",
+  description: "Professional automation, integration and web application work, plus a live automation playground.",
 };
 
 export default function ProjectsPage() {
@@ -19,7 +19,7 @@ export default function ProjectsPage() {
             Things I&apos;ve <Em>built</Em>.
           </h1>
           <p className="mt-6 max-w-[580px] text-[19px] leading-normal text-soft">
-            Professional work for an accounting firm and a multi-business group, plus personal projects that show what
+            Professional work for an accounting firm and a multi-business group, plus a personal project that shows what
             can&apos;t be shown from client work.
           </p>
         </div>

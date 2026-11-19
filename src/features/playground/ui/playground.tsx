@@ -2,12 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
-import { runWorkflow, type AdapterRegistry, type Data, type RunResult } from "../engine";
+import { resumeWorkflow, runWorkflow, validateWorkflow, type AdapterRegistry, type Data, type ReviewDecision, type RunResult } from "../engine";
 import { toCsv } from "../intake/csv";
 import { checkFile, documentKind, formatBytes, type DocumentKind } from "../intake/limits";
 import { workflows, type PlaygroundWorkflow } from "../workflows";
 import { canvasHeight, layoutWorkflow } from "./layout";
 import { eventDelay, replayFrame, type UiStatus } from "./replay";
+import { ReviewPanel } from "./review-panel";
 import { statusGlyph, typeLabel } from "./step-node";
 
 // React Flow measures the DOM, so it renders on the client only. The placeholder keeps the height stable.
@@ -16,12 +17,14 @@ const FlowGraph = dynamic(() => import("./flow-graph"), {
   loading: () => <div className="grid h-full place-items-center font-mono text-xs text-muted">Loading graph…</div>,
 });
 
-type Tab = "input" | "step" | "log";
-const tabs: { id: Tab; label: string }[] = [
+type Tab = "input" | "step" | "log" | "review";
+const baseTabs: { id: Tab; label: string }[] = [
   { id: "input", label: "Input" },
   { id: "step", label: "Steps" },
   { id: "log", label: "Log" },
 ];
+// Shown only while a run is paused for the visitor's review.
+const reviewTabs: { id: Tab; label: string }[] = [...baseTabs, { id: "review", label: "Review" }];
 
 const pretty = (v: unknown) => JSON.stringify(v, null, 2);
 
@@ -65,12 +68,30 @@ export function Playground() {
     [badges],
   );
 
-  // Step the replay cursor through the event log.
+  const awaitingReview = result?.status === "waiting" && frame.done;
+  const reviewNode = useMemo(() => {
+    if (!result?.waitingAt) return undefined;
+    const v = validateWorkflow(def);
+    const n = v.ok ? v.workflow.nodes.find((x) => x.id === result.waitingAt) : undefined;
+    return n?.type === "review" ? n : undefined;
+  }, [def, result]);
+  const tabs = awaitingReview ? reviewTabs : baseTabs;
+  const shownTab = tab === "review" && !awaitingReview ? "log" : tab;
+
+  // Step the replay cursor through the event log. A run paused for review opens the Review tab when the replay reaches it.
   useEffect(() => {
     if (!result || cursor >= result.events.length) return;
-    const timer = setTimeout(() => setCursor((c) => c + 1), eventDelay(result.events[cursor]));
+    const timer = setTimeout(() => {
+      setCursor((c) => c + 1);
+      if (cursor + 1 === result.events.length && result.status === "waiting") setTab("review");
+    }, eventDelay(result.events[cursor]));
     return () => clearTimeout(timer);
   }, [result, cursor]);
+
+  function skipToEnd(r: RunResult) {
+    setCursor(r.events.length);
+    setTab(r.status === "waiting" ? "review" : "log");
+  }
 
   function clearRun() {
     runToken.current++;
@@ -133,12 +154,26 @@ export function Playground() {
     const r = await runWorkflow(def, parsed.data, { adapters: file ? activeAdapters(wf, file, onProgress) : wf.adapters });
     if (token !== runToken.current) return; // reset or re-run happened meanwhile
     setProcessing(null);
-    // Reduced motion, or the site's Motion switch turned off: show the finished run at once.
-    const instant =
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off";
     setResult(r);
-    setCursor(instant ? r.events.length : 0);
-    setTab("log");
+    if (instantReplay()) skipToEnd(r);
+    else {
+      setCursor(0);
+      setTab("log");
+    }
+  }
+
+  /** The visitor's review decision. The run continues from the pause, and the replay picks up where it stopped. */
+  async function decide(decision: ReviewDecision) {
+    if (!result || result.status !== "waiting") return;
+    const token = runToken.current;
+    const r = await resumeWorkflow(def, result, decision, { adapters: file ? activeAdapters(wf, file, () => {}) : wf.adapters });
+    if (token !== runToken.current) return;
+    setResult(r);
+    if (instantReplay()) skipToEnd(r);
+    else {
+      setCursor(result.events.length);
+      setTab("log");
+    }
   }
 
   function select(id: string) {
@@ -155,6 +190,8 @@ export function Playground() {
     ? { text: "Ready", tone: "text-muted" }
     : running
       ? { text: "Running…", tone: "text-accent" }
+      : result.status === "waiting"
+        ? { text: "Paused: waiting for your review", tone: "text-accent" }
       : result.status === "success"
         ? { text: "Completed", tone: "text-ok" }
         : result.status === "failed"
@@ -185,11 +222,13 @@ export function Playground() {
           </div>
           <div className="flex flex-wrap gap-2">
             {running && !processing ? (
-              <button type="button" onClick={() => setCursor(result!.events.length)} className={`${control} tap border border-border-strong`}>
+              // Distinct keys: React must not reuse this button as "Reset", or a late click would clear the run.
+              <button key="skip" type="button" onClick={() => skipToEnd(result!)} className={`${control} tap border border-border-strong`}>
                 Skip to end
               </button>
             ) : (
               <button
+                key="reset"
                 type="button"
                 onClick={() => loadSample(sampleId)}
                 title={file ? "Clear your file and the run" : undefined}
@@ -254,9 +293,9 @@ export function Playground() {
           </div>
 
           <div className="flex max-h-[600px] min-h-[360px] min-w-0 flex-col lg:h-(--canvas-h) lg:max-h-none">
-            <TabBar value={tab} onChange={setTab} />
-            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-5" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-              {tab === "input" && (
+            <TabBar items={tabs} value={shownTab} onChange={setTab} />
+            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-5" role="tabpanel" id={`panel-${shownTab}`} aria-labelledby={`tab-${shownTab}`}>
+              {shownTab === "input" && (
                 <InputPanel
                   text={inputText}
                   error={parsed.ok ? null : parsed.error}
@@ -267,7 +306,7 @@ export function Playground() {
                   }}
                 />
               )}
-              {tab === "step" && (
+              {shownTab === "step" && (
                 <StepPanel
                   wf={wf}
                   result={result}
@@ -279,13 +318,24 @@ export function Playground() {
                   onSelect={setSelectedId}
                 />
               )}
-              {tab === "log" && <LogPanel events={frame.events} />}
+              {shownTab === "log" && <LogPanel events={frame.events} />}
+              {shownTab === "review" && reviewNode && result?.nodes[reviewNode.id]?.input && (
+                <ReviewPanel key={result.events.length} node={reviewNode} input={result.nodes[reviewNode.id].input!} onDecide={decide} />
+              )}
             </div>
           </div>
         </div>
 
         {result && frame.done && (
-          <ResultPanel result={result} fileStem={def.id} labelOf={(id) => def.nodes.find((n) => n.id === id)?.label ?? id} />
+          <ResultPanel
+            result={result}
+            fileStem={def.id}
+            labelOf={(id) => def.nodes.find((n) => n.id === id)?.label ?? id}
+            onOpenReview={() => {
+              setTab("review");
+              document.getElementById("tab-review")?.focus();
+            }}
+          />
         )}
       </section>
 
@@ -320,7 +370,7 @@ export function Playground() {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 
-function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => void }) {
+function TabBar({ items: tabs, value, onChange }: { items: { id: Tab; label: string }[]; value: Tab; onChange: (t: Tab) => void }) {
   function onKeyDown(e: KeyboardEvent) {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     const i = tabs.findIndex((t) => t.id === value);
@@ -345,6 +395,7 @@ function TabBar({ value, onChange }: { value: Tab; onChange: (t: Tab) => void })
           }`}
         >
           {t.label}
+          {t.id === "review" && <span aria-hidden="true" className="ml-1.5 inline-block size-1.5 rounded-full bg-accent align-middle" />}
         </button>
       ))}
     </div>
@@ -458,6 +509,12 @@ function StepPanel({
           system is contacted.
         </p>
       )}
+      {badges[node.id] === "you" && (
+        <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
+          <span className="text-accent">Your step.</span> The run really pauses here until you confirm or reject. Nothing
+          is sent anywhere.
+        </p>
+      )}
       {badges[node.id] === "on device" && (
         <p className="rounded-xl border border-border bg-code px-3 py-2 text-xs text-soft">
           <span className="text-ok">Runs on your device.</span> This step does real work in your browser. Your data is
@@ -499,7 +556,7 @@ function LogPanel({ events }: { events: RunResult["events"] }) {
   }, [events.length]);
 
   if (!events.length) return <p className="text-xs text-muted">Run the workflow to see the execution log.</p>;
-  const tone = { info: "text-soft", success: "text-ok", error: "text-danger", skip: "text-muted" };
+  const tone = { info: "text-soft", success: "text-ok", error: "text-danger", skip: "text-muted", wait: "text-accent" };
   return (
     <ol ref={list} className="space-y-1.5 font-mono text-xs">
       {events.map((e) => (
@@ -512,7 +569,34 @@ function LogPanel({ events }: { events: RunResult["events"] }) {
   );
 }
 
-function ResultPanel({ result, fileStem, labelOf }: { result: RunResult; fileStem: string; labelOf: (id: string) => string }) {
+function ResultPanel({
+  result,
+  fileStem,
+  labelOf,
+  onOpenReview,
+}: {
+  result: RunResult;
+  fileStem: string;
+  labelOf: (id: string) => string;
+  onOpenReview: () => void;
+}) {
+  if (result.status === "waiting") {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4 sm:p-5">
+        <p className="text-sm">
+          <span className="font-semibold text-accent">Paused at “{labelOf(result.waitingAt!)}”.</span> Check the fields in
+          the Review tab, then confirm or reject.
+        </p>
+        <button
+          type="button"
+          onClick={onOpenReview}
+          className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 text-sm font-semibold transition hover:bg-surface-2"
+        >
+          Open review
+        </button>
+      </div>
+    );
+  }
   const failedAt = result.status === "failed" ? result.order.find((id) => result.nodes[id].status === "error") : undefined;
   return (
     <div className="border-t border-border p-4 sm:p-5">
@@ -664,10 +748,11 @@ function activeAdapters(wf: PlaygroundWorkflow, file: File, onProgress: (m: stri
   return wf.upload?.adapters ? wf.upload.adapters(file, onProgress) : wf.adapters;
 }
 
-/** How each integration step runs with the given adapters: simulated, or real work on the device. */
+/** How each step really runs: simulated, real work on the device, or a pause for the visitor ("you"). */
 function stepBadges(wf: PlaygroundWorkflow, adapters: AdapterRegistry): Record<string, string> {
   const out: Record<string, string> = {};
   for (const n of wf.definition.nodes) {
+    if (n.type === "review") out[n.id] = "you";
     if (n.type !== "integration") continue;
     const a = adapters[n.config.adapter];
     if (a?.simulated) out[n.id] = "simulated";
@@ -685,6 +770,11 @@ const acceptByKind: Record<DocumentKind, string> = {
 /** Every file kind some workflow can read. */
 const uploadKinds = [...new Set(workflows.flatMap((w) => w.upload?.kinds ?? []))];
 
+/** Reduced motion, or the site's Motion switch turned off: show runs finished at once. */
+function instantReplay() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off";
+}
+
 function download(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = Object.assign(document.createElement("a"), { href: url, download: name });
@@ -700,8 +790,16 @@ const chipTone: Record<UiStatus, string> = {
   success: "text-ok",
   error: "text-danger",
   skipped: "text-muted",
+  waiting: "text-accent",
 };
-const chipText: Record<UiStatus, string> = { idle: "Not run", running: "Running", success: "Done", error: "Failed", skipped: "Skipped" };
+const chipText: Record<UiStatus, string> = {
+  idle: "Not run",
+  running: "Running",
+  success: "Done",
+  error: "Failed",
+  skipped: "Skipped",
+  waiting: "Waiting for you",
+};
 
 function StatusChip({ status }: { status: UiStatus }) {
   return (

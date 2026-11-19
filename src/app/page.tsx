@@ -273,7 +273,7 @@ export default function Home() {
       <section aria-labelledby="pg-title" className="mx-auto max-w-[1200px] px-4 pb-28 sm:px-6">
         <div className="glass overflow-hidden rounded-[34px]">
           <div className="px-6 pt-8 pb-2 sm:px-11 sm:pt-11">
-            <p className="font-mono text-xs tracking-[0.06em] text-muted">PERSONAL PROJECT · IN PROGRESS</p>
+            <p className="font-mono text-xs tracking-[0.06em] text-muted">PERSONAL PROJECT · LIVE</p>
             <h2 id="pg-title" className="mt-3 font-serif text-[clamp(40px,5vw,68px)] leading-none">
               Don&apos;t read about it. <Em>Run it.</Em>
             </h2>
