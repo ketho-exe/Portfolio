@@ -51,7 +51,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
   const section = (key: CaseStudyKey, heading: string) => (
     <Fragment key={key}>
       <section id={key} aria-labelledby={`h-${key}`} className="mb-14 last:mb-0">
-        <h2 id={`h-${key}`} className="mb-4 scroll-mt-28 font-serif text-[40px] leading-[1.05]">
+        <h2 id={`h-${key}`} className="mb-4 font-serif text-[40px] leading-[1.05]">
           {heading}
         </h2>
         {project.caseStudy[key]!.map((para) => (
@@ -77,7 +77,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
   return (
     <article className="pb-24">
       {/* Reading progress, drawn along the bottom of the header (scroll-driven; static where unsupported). */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-[77px] z-30 px-4 sm:px-6">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-[calc(var(--header-h)-1px)] z-30 px-4 sm:px-6">
         <div className="relative mx-auto h-0.5 max-w-[1200px]">
           <span className="read-progress" />
         </div>

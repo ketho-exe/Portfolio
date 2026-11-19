@@ -23,6 +23,9 @@
   --danger-soft: rgb(255 105 97 / 0.14);
   --code: rgb(0 0 0 / 0.4);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Sticky chrome: header bottom edge (pt-3.5 + min-h-16) and the space the phone tab bar covers. */
+  --header-h: 78px;
+  --tabbar-h: 96px;
   color-scheme: dark;
 }
 
@@ -53,6 +56,13 @@ html {
   background: var(--bg);
   color: var(--fg);
   -webkit-text-size-adjust: 100%;
+  /* Keep focused and anchored elements clear of the sticky header and (on phones) the tab bar. */
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+@media (width < 48rem) {
+  html {
+    scroll-padding-bottom: calc(var(--tabbar-h) + 8px);
+  }
 }
 
 body {
