@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/app/shared-metadata";
 import { Fragment } from "react";
 import { Icon } from "@/components/icons";
 import { ButtonLink, Note } from "@/components/ui";
@@ -14,7 +15,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/projects/[slug]">): Promise<Metadata> {
   const project = getProject((await params).slug);
-  return project ? { title: project.name, description: project.summary } : {};
+  return project ? pageMetadata(`/projects/${project.slug}/`, { title: project.name, description: project.summary }) : {};
 }
 
 // Contents list beside the article from 1024px; stacked above it on smaller screens.

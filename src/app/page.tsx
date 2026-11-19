@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMetadata } from "@/app/shared-metadata";
 import { Icon, type IconName } from "@/components/icons";
 import { ButtonLink, Em, Eyebrow } from "@/components/ui";
 import { getProject, type Project } from "@/content/projects";
@@ -54,6 +56,8 @@ const sampleLog = [
   ["04", "extract    fields + confidence"],
   ["05", "output     JSON / CSV ready"],
 ];
+
+export const metadata: Metadata = pageMetadata("/");
 
 const byline = (p: Project) => [p.organisation?.replace(" Chartered Accountants", ""), p.period?.replace("2024–2025", "2024–25")].filter(Boolean).join(" · ");
 

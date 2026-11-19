@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/shared-metadata";
 import { ProjectIndex } from "@/components/project-index";
 import { StatusDot, statusMeaning } from "@/components/status";
 import { Container, Em, Eyebrow } from "@/components/ui";
 import { getProject, projects } from "@/content/projects";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("/projects/", {
   title: "Work",
   description: "Professional automation, integration and web application work, plus a live automation playground.",
-};
+});
 
 export default function ProjectsPage() {
   return (

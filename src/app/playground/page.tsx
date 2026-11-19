@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/shared-metadata";
 import Link from "next/link";
 import { Container, Em, Eyebrow } from "@/components/ui";
 import { Playground } from "@/features/playground/ui/playground";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("/playground/", {
   title: "Automation playground",
   description: "Run and inspect example business workflows step by step, in your browser. Integrations are simulated.",
-};
+});
 
 const how = [
   [

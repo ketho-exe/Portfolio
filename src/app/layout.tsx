@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ContactButton } from "@/components/contact-button";
 import { SiteFooter, SiteHeader, TabBar } from "@/components/site-chrome";
 import { site } from "@/content/site";
+import { baseOpenGraph } from "./shared-metadata";
 import "./globals.css";
 
 // Self-hosted at build time by next/font, so no request goes to Google (and the CSP holds).
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   metadataBase: site.url ? new URL(site.url) : undefined,
   title: { default: `${site.name} · ${site.role}`, template: `%s · ${site.name}` },
   description: site.description,
-  openGraph: { type: "website", siteName: site.name, locale: "en_GB" },
+  openGraph: baseOpenGraph,
   twitter: { card: "summary_large_image" },
 };
 

@@ -18,7 +18,33 @@ test.describe("every page", () => {
       expect(overflow).toBeLessThanOrEqual(0);
       expect(errors).toEqual([]);
     });
+
+    test(`${route} has a self-referencing canonical URL and full Open Graph tags`, async ({ page }) => {
+      await page.goto(route);
+      const url = `${PRODUCTION_ORIGIN}${route}`;
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", url);
+      // A page's openGraph replaces the layout's, so check the shared fields survived.
+      for (const [property, value] of [
+        ["og:url", url],
+        ["og:site_name", "Szymon Klejny"],
+        ["og:locale", "en_GB"],
+        ["og:type", "website"],
+        ["og:image", `${PRODUCTION_ORIGIN}/opengraph-image.png`],
+      ]) {
+        await expect(page.locator(`meta[property="${property}"]`)).toHaveAttribute("content", value);
+      }
+    });
   }
+});
+
+test("at 320px the full name fits in the header and the Motion switch keeps its name", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+  const name = page.getByRole("link", { name: /home/ }).locator("span", { hasText: /^Szymon Klejny$/ });
+  await expect(name).toBeVisible();
+  expect(await name.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expect(page.getByRole("switch", { name: "Motion" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 });
 
 test("main navigation reaches every section", async ({ page, isMobile }) => {
@@ -77,7 +103,8 @@ test("the Motion switch pauses decorative motion and remembers it", async ({ pag
   await expect(page.getByRole("switch", { name: "Motion" })).toHaveAttribute("aria-checked", "false");
 });
 
-test("the contact button opens email, LinkedIn and GitHub links", async ({ page }) => {
+test("the contact button opens email, LinkedIn and GitHub links", async ({ page, isMobile }) => {
+  test.skip(isMobile, "the button is desktop-only; phones use the tab bar's Contact tab");
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
   await button.focus();
@@ -91,8 +118,16 @@ test("the contact button opens email, LinkedIn and GitHub links", async ({ page 
   await expect(button).toBeFocused();
 });
 
-test("on a phone, the contact button opens and closes with taps", async ({ page, isMobile }) => {
+test("on a phone, the contact button is hidden and the tab bar offers Contact instead", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "phone layout");
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Contact me" })).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "Contact", exact: true })).toBeVisible();
+});
+
+test("on a wide touch screen, the contact button opens and closes with taps", async ({ page, isMobile }) => {
   test.skip(!isMobile, "touch journey");
+  await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
   const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
@@ -112,7 +147,11 @@ test("on desktop, hovering previews the links and they stay readable on hover", 
   test.skip(isMobile, "mouse journey");
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
+  // Its decorative loops are paused while it's closed.
+  const ring = page.locator(".fab-ring > span");
+  await expect(ring).toHaveCSS("animation-play-state", "paused");
   await button.hover();
+  await expect(ring).toHaveCSS("animation-play-state", "running");
   const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
   await expect(linkedin).toBeVisible();
   // Let the fan-out transition finish so the mouse lands on LinkedIn, not where it is mid-flight.

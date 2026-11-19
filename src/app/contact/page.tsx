@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/shared-metadata";
 import { CopyButton } from "@/components/copy-button";
 import { Icon, type IconName } from "@/components/icons";
 import { ButtonAnchor, Container, Em, Eyebrow, Note, Placeholder } from "@/components/ui";
 import { site } from "@/content/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("/contact/", {
   title: "Contact",
   description: `Contact ${site.name}: email, LinkedIn, GitHub and CV.`,
-};
+});
 
 type Channel = { label: string; body: string; href: string | null; icon: IconName; external?: boolean; download?: boolean };
 

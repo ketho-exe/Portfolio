@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/shared-metadata";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { RolePoints } from "@/components/role-points";
@@ -7,10 +8,10 @@ import { education, experience, languages } from "@/content/experience";
 import { site } from "@/content/site";
 import { skillGroups } from "@/content/skills";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata("/about/", {
   title: "About",
   description: "Background, experience, skills and approach to building and automating software.",
-};
+});
 
 const approach = [
   ["Understand", "Learn how the process works today, who uses it and what a good outcome looks like."],
