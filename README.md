@@ -2,7 +2,7 @@
 
 Personal portfolio and digital studio: web development, software solutions, business automation and integrations.
 
-**Status:** deployed on Vercel (https://portfolio-sklejny.vercel.app), currently behind Vercel Authentication. Site, case studies, About content and the automation playground are in place.
+**Status:** live at https://www.sklejny.dev (Vercel). Site, case studies, About content and the automation playground are in place.
 
 ## Stack
 
@@ -76,6 +76,10 @@ Host requirements for the playground's file intake:
 
 Next.js 16.4 writes prefetch payloads with backslash paths on Windows (`about/__next.about/__PAGE__.txt` instead of `about/__next.about.__PAGE__.txt`), so client prefetches 404. `postbuild` runs `scripts/fix-segment-files.mjs` to flatten them; it does nothing on Linux/macOS builds. Remove it once Next fixes the export.
 
-## Before launch
+## Production origin
 
-Set `site.url` in `src/content/site.ts` to the production origin. Until then the sitemap is empty and share-image URLs fall back to localhost.
+`site.url` in `src/content/site.ts` is `https://www.sklejny.dev`. The sitemap, robots.txt and share-image URLs are built from it, and an e2e test checks they use that origin. The `*.vercel.app` alias is behind Vercel Authentication, so never point `site.url` at it.
+
+## CV
+
+`public/cv/szymon-klejny-cv.pdf` is public and indexable: keep the phone number out of it.

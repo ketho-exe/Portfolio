@@ -194,7 +194,7 @@ export const projects: Project[] = [
     status: "Live",
     technologies: ["Next.js", "TypeScript", "React Flow", "Zod", "PDF.js", "Tesseract.js", "Vitest", "Playwright"],
     featured: false,
-    links: { demo: "/playground/" },
+    links: { demo: "/playground/", source: "https://github.com/ketho-exe/Portfolio" },
     caseStudy: {
       overview: [
         "A focused environment for exploring example business workflows: select one, edit the sample input, run it and inspect what every step received and produced.",

@@ -123,8 +123,16 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
               </ButtonLink>
             )}
             {project.links.source && (
-              <a href={project.links.source} className="tap glass inline-flex min-h-12 items-center rounded-full px-6 font-semibold">
-                Source code ↗
+              <a
+                href={project.links.source}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap glass inline-flex min-h-12 items-center gap-2 rounded-full px-6 font-semibold"
+              >
+                <Icon name="github" size={16} />
+                Source code
+                <Icon name="arrowUpRight" size={16} />
+                <span className="sr-only">(opens in a new tab)</span>
               </a>
             )}
           </div>

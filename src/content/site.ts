@@ -29,7 +29,7 @@ export const site: SiteConfig = {
   linkedin: "https://www.linkedin.com/in/szymon-klejny-732a58296/",
   github: "https://github.com/ketho-exe",
   cvUrl: "/cv/szymon-klejny-cv.pdf",
-  url: "https://portfolio-sklejny.vercel.app",
+  url: "https://www.sklejny.dev",
 };
 
 export const nav = [

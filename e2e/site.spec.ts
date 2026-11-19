@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { routes } from "./routes";
 
+const PRODUCTION_ORIGIN = "https://www.sklejny.dev";
+
 test.describe("every page", () => {
   for (const route of routes) {
     test(`${route} renders with one h1, a title and no overflow or console errors`, async ({ page }) => {
@@ -156,10 +158,15 @@ test("robots, sitemap and share image are served", async ({ request, page }) => 
   expect((await request.get("/robots.txt")).status()).toBe(200);
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.status()).toBe(200);
-  expect(await sitemap.text()).toContain("<urlset");
+  const sitemapText = await sitemap.text();
+  expect(sitemapText).toContain("<urlset");
+  // Absolute URLs must use the public domain; the vercel.app alias sits behind a login.
+  expect(sitemapText).toContain(`<loc>${PRODUCTION_ORIGIN}/</loc>`);
+  expect(await (await request.get("/robots.txt")).text()).toContain(`Sitemap: ${PRODUCTION_ORIGIN}/sitemap.xml`);
 
   await page.goto("/");
   const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(new URL(og!).origin).toBe(PRODUCTION_ORIGIN);
   const res = await request.get(new URL(og!).pathname);
   expect(res.status()).toBe(200);
   expect(res.headers()["content-type"]).toBe("image/png");
