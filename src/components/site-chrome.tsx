@@ -48,12 +48,16 @@ export function SiteFooter() {
     site.github && { label: "GitHub", href: site.github, external: true },
   ].filter((x): x is { label: string; href: string; external: boolean } => Boolean(x));
 
+  // Build-time year: every deploy rebuilds the site, and a client-side year would cost a hydration
+  // workaround for a footer detail.
+  const year = new Date().getFullYear();
+
   return (
     <footer className="relative mx-auto mt-8 w-full max-w-[1200px] px-4 pb-10 sm:px-6">
       <div className="glass flex flex-wrap items-center justify-between gap-6 rounded-card p-7">
         <div>
           <p className="font-serif text-display-6 leading-tight">{site.name}</p>
-          <p className="mt-1.5 font-mono text-xs text-muted">Static site · no tracking · © {new Date().getFullYear()}</p>
+          <p className="mt-1.5 font-mono text-xs text-muted">Static site · no tracking · © {year}</p>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-1 text-[15px]">
           <Link href="/" className="inline-flex min-h-11 items-center hover:text-accent">
