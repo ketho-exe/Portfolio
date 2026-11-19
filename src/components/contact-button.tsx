@@ -1,15 +1,36 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import { Icon, type IconName } from "./icons";
 
 type Item = { label: string; href: string; icon: IconName; external: boolean };
+/** "hover": a mouse is over it (preview). "pinned": opened by click, tap or keyboard; stays until closed. */
+type Mode = "hover" | "pinned" | null;
 
-/** Floating contact button. Hover, focus or tap fans out email, LinkedIn and GitHub. Escape closes it. */
+/**
+ * Floating contact button that fans out email, LinkedIn and GitHub.
+ * Open state lives in React, not CSS :hover/:focus-within, because touch browsers keep those
+ * "stuck" after a tap, which made the menu impossible to close on phones.
+ */
 export function ContactButton() {
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const open = mode !== null;
+
+  // Tap or click anywhere else closes it.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Element;
+      if (!root.current?.contains(target) || !target.closest("a, button")) setMode(null);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [open]);
+
   const items = [
     site.github && { label: "GitHub", href: site.github, icon: "github", external: true },
     site.linkedin && { label: "LinkedIn", href: site.linkedin, icon: "linkedin", external: true },
@@ -25,9 +46,18 @@ export function ContactButton() {
   if (!items.length) return null;
   return (
     <div
-      className={`fab fixed right-5 bottom-[100px] z-30 size-16 min-[900px]:right-8 min-[900px]:bottom-8 ${open ? "open" : ""}`}
+      ref={root}
+      className={`fab fixed right-5 bottom-[100px] z-30 size-16 min-[900px]:right-8 min-[900px]:bottom-8 ${open ? "open" : ""} ${mode === "pinned" ? "pinned" : ""}`}
+      onPointerEnter={(e) => e.pointerType === "mouse" && !mode && setMode("hover")}
+      onPointerLeave={(e) => e.pointerType === "mouse" && mode === "hover" && setMode(null)}
+      onBlur={(e) => {
+        if (!root.current?.contains(e.relatedTarget as Node | null)) setMode((m) => (m === "pinned" ? null : m));
+      }}
       onKeyDown={(e) => {
-        if (e.key === "Escape" && open) setOpen(false);
+        if (e.key === "Escape" && open) {
+          setMode(null);
+          button.current?.focus();
+        }
       }}
     >
       <span className="fab-hit" aria-hidden="true" />
@@ -35,24 +65,27 @@ export function ContactButton() {
         <span className="loop" />
       </span>
       <button
+        ref={button}
         type="button"
         aria-label="Contact me"
         aria-expanded={open}
         aria-controls="contact-links"
-        onClick={() => setOpen(!open)}
+        onClick={() => setMode(mode === "pinned" ? null : "pinned")}
         className="relative z-[2] size-16 cursor-pointer rounded-full border border-white/35 bg-accent text-accent-fg shadow-[0_12px_32px_rgb(255_210_63/0.3)] transition-transform duration-300 ease-(--spring) hover:scale-[1.07]"
       >
         <Icon name="chat" size={26} className="fab-icon-swap fab-chat" />
         <Icon name="close" size={24} strokeWidth={2.4} className="fab-icon-swap fab-close" />
       </button>
-      <ul id="contact-links" aria-label="Contact links">
+      {/* inert while closed, so the hidden links can't be tabbed to or tapped. */}
+      <ul id="contact-links" aria-label="Contact links" inert={!open}>
         {items.map((item, i) => (
           <li key={item.label} className="fab-item" style={{ "--i": i, "--x": spots[i][0], "--y": spots[i][1] } as CSSProperties}>
             <span className="fab-float loop" style={{ "--i": i } as CSSProperties}>
               <a
                 href={item.href}
                 aria-label={item.external ? `${item.label} (opens in a new tab)` : item.label}
-                className="fab-link glass relative flex size-[52px] items-center justify-center rounded-full transition hover:scale-[1.12] hover:bg-accent hover:text-accent-fg focus-visible:bg-accent focus-visible:text-accent-fg"
+                onClick={() => setMode(null)}
+                className="fab-link glass relative flex size-[52px] items-center justify-center rounded-full"
                 {...(item.external && { target: "_blank", rel: "noopener noreferrer" })}
               >
                 <Icon name={item.icon} size={22} />

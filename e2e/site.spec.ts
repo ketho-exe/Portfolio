@@ -78,13 +78,59 @@ test("the Motion switch pauses decorative motion and remembers it", async ({ pag
 test("the contact button opens email, LinkedIn and GitHub links", async ({ page }) => {
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
-  await button.click();
+  await button.focus();
+  await page.keyboard.press("Enter");
   await expect(button).toHaveAttribute("aria-expanded", "true");
   const links = page.getByRole("list", { name: "Contact links" });
   await expect(links.getByRole("link", { name: "Email" })).toHaveAttribute("href", /^mailto:/);
   await expect(links.getByRole("link", { name: /GitHub/ })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(button).toHaveAttribute("aria-expanded", "false");
+  await expect(button).toBeFocused();
+});
+
+test("on a phone, the contact button opens and closes with taps", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "touch journey");
+  await page.goto("/about/");
+  const button = page.getByRole("button", { name: "Contact me" });
+  const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
+  await button.tap();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await expect(linkedin).toBeVisible();
+  await button.tap();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await expect(linkedin).toBeHidden();
+  // A tap elsewhere also closes it.
+  await button.tap();
+  await page.locator("h1").tap();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+});
+
+test("on desktop, hovering previews the links and they stay readable on hover", async ({ page, isMobile }) => {
+  test.skip(isMobile, "mouse journey");
+  await page.goto("/about/");
+  const button = page.getByRole("button", { name: "Contact me" });
+  await button.hover();
+  const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
+  await expect(linkedin).toBeVisible();
+  // Let the fan-out transition finish so the mouse lands on LinkedIn, not where it is mid-flight.
+  await linkedin.evaluate((a) => Promise.all(a.closest(".fab-item")!.getAnimations().map((t) => t.finished)));
+  await linkedin.hover({ force: true }); // it floats, so it is never "stable"
+  // Yellow with a dark icon, and a light label on a dark tip (the bug: glass background, dark icon, dark label).
+  const colours = () =>
+    linkedin.evaluate((a) => {
+      const tip = getComputedStyle(a.querySelector(".fab-tip")!);
+      return [getComputedStyle(a).backgroundColor, getComputedStyle(a).color, tip.color];
+    });
+  await expect.poll(colours).toEqual(["rgb(255, 210, 63)", "rgb(17, 18, 20)", "rgb(255, 255, 255)"]);
+  await expect(linkedin.locator(".fab-tip")).toBeVisible();
+  // Clicking pins it open; clicking the close button shuts it even with the mouse still over it.
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await page.mouse.move(10, 10);
+  await expect(linkedin).toBeHidden();
 });
 
 test("CV downloads as a PDF", async ({ page, request }) => {

@@ -303,8 +303,12 @@ body {
   opacity: 0;
   transform: scale(0.3);
   pointer-events: none;
-  transition: opacity 0.2s, transform 0.55s var(--spring);
-  transition-delay: calc(var(--i) * 60ms);
+  /* Hidden once faded out, so closed links can't be seen, tapped or read out. */
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    transform 0.55s var(--spring),
+    visibility 0s linear 0.3s;
 }
 .fab-float {
   display: block;
@@ -320,35 +324,57 @@ body {
   padding: 5px 10px;
   border-radius: 9px;
   background: rgb(20 20 24 / 0.94);
+  color: var(--fg);
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
   transition: opacity 0.2s;
 }
-.fab-link:hover .fab-tip,
+/* Unlayered like .glass, so it beats the glass background (a Tailwind hover:bg-* utility can't). */
+.fab-link {
+  transition: transform 0.3s var(--spring), background-color 0.2s, color 0.2s;
+}
+.fab-link:focus-visible {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
 .fab-link:focus-visible .fab-tip {
   opacity: 1;
 }
-.fab:is(:hover, :focus-within, .open) .fab-hit {
+/* Hover only where a real pointer can hover; touch browsers would leave it stuck after a tap. */
+@media (hover: hover) {
+  .fab-link:hover {
+    background: var(--accent);
+    color: var(--accent-fg);
+    transform: scale(1.12);
+  }
+  .fab-link:hover .fab-tip {
+    opacity: 1;
+  }
+}
+/* Open state comes from React ("open"; "pinned" once clicked or tapped), never from :hover. */
+.fab.open .fab-hit {
   pointer-events: auto;
 }
-.fab:is(:hover, :focus-within, .open) .fab-ring {
+.fab.open .fab-ring {
   opacity: 1;
   transform: scale(1);
 }
-.fab:is(:hover, :focus-within, .open) .fab-chat {
+.fab.pinned .fab-chat {
   opacity: 0;
   transform: rotate(90deg) scale(0.5);
 }
-.fab:is(:hover, :focus-within, .open) .fab-close {
+.fab.pinned .fab-close {
   opacity: 1;
   transform: none;
 }
-.fab:is(:hover, :focus-within, .open) .fab-item {
+.fab.open .fab-item {
   opacity: 1;
   transform: translate(var(--x), var(--y));
   pointer-events: auto;
+  visibility: visible;
+  transition-delay: calc(var(--i) * 60ms), calc(var(--i) * 60ms), 0s;
 }
 
 /* ── React Flow (playground graph) ────────────────────────────────────── */
