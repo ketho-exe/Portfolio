@@ -57,7 +57,7 @@ None yet. A `.env.example` will be added with the first one.
 
 ## Deployment
 
-Hosted on Vercel, deployed from `main`. `npm run build` produces a static site in `out/` that any static host can serve. `vercel.json` sets the security headers (CSP, `frame-ancestors`, `nosniff`, referrer and permissions policies); `scripts/serve-out.mjs` applies the same headers in e2e tests.
+Hosted on Vercel, deployed from `main`. `npm run build` produces a static site in `out/` that any static host can serve. `vercel.json` sets the security headers (CSP, `frame-ancestors`, HSTS with `includeSubDomains`, `nosniff`, referrer and permissions policies); `scripts/serve-out.mjs` applies the same headers in e2e tests.
 
 Host requirements for the playground's file intake:
 

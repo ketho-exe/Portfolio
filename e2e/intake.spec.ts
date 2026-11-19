@@ -61,6 +61,8 @@ test("pages carry the security headers from vercel.json", async ({ page }) => {
   const headers = (await page.goto("/playground/"))!.headers();
   expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
   expect(headers["x-content-type-options"]).toBe("nosniff");
+  // Owner confirmed every *.sklejny.dev subdomain is HTTPS (2026-11-19).
+  expect(headers["strict-transport-security"]).toBe("max-age=63072000; includeSubDomains");
 });
 
 test("the page's security policy blocks requests to other sites", async ({ page }) => {
