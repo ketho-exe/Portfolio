@@ -34,6 +34,9 @@ export type Project = {
   status: ProjectStatus;
   organisation?: string;
   period?: string;
+  /** Short forms for compact labels (cards, index rows). Default to the full ones. */
+  organisationShort?: string;
+  periodShort?: string;
   technologies: string[];
   featured: boolean;
   links?: { demo?: string; source?: string };
@@ -93,6 +96,8 @@ export const projects: Project[] = [
     status: "Delivered",
     organisation: "EAM London Chartered Accountants",
     period: "2024–2025",
+    organisationShort: "EAM London",
+    periodShort: "2024–25",
     technologies: ["PowerShell", "Excel VBA", "Zapier"],
     featured: true,
     headline: "The weekly billing run that stopped eating the afternoon",
@@ -134,6 +139,8 @@ export const projects: Project[] = [
     status: "Delivered",
     organisation: "EAM London Chartered Accountants",
     period: "2024–2025",
+    organisationShort: "EAM London",
+    periodShort: "2024–25",
     technologies: ["Klippa DocHorizon", "Azure Functions", "JavaScript", "OpenAI API", "Zapier", "SharePoint"],
     featured: true,
     caseStudy: {
@@ -230,6 +237,11 @@ export const projects: Project[] = [
     },
   },
 ];
+
+/** "EAM London · 2024–25": short organisation and period, or "" for personal projects. */
+export function byline(p: Project): string {
+  return [p.organisationShort ?? p.organisation, p.periodShort ?? p.period].filter(Boolean).join(" · ");
+}
 
 export function getProject(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Project } from "@/content/projects";
+import { byline, type Project } from "@/content/projects";
 import { Icon } from "./icons";
 import { StatusDot } from "./status";
 
@@ -116,6 +116,5 @@ export function ProjectIndex({ projects, featured }: { projects: Project[]; feat
 }
 
 function where(p: Project) {
-  if (p.organisation) return [p.organisation.replace(" Chartered Accountants", ""), p.period?.replace("2024–2025", "2024–25")].filter(Boolean).join(" · ");
-  return p.links?.demo ? "Live demo" : "";
+  return byline(p) || (p.links?.demo ? "Live demo" : "");
 }

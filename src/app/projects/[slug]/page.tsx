@@ -5,7 +5,7 @@ import { pageMetadata } from "@/app/shared-metadata";
 import { Fragment } from "react";
 import { Icon } from "@/components/icons";
 import { ButtonLink, Note } from "@/components/ui";
-import { caseStudySections, getProject, projects, type CaseStudyKey, type Project } from "@/content/projects";
+import { byline, caseStudySections, getProject, projects, type CaseStudyKey, type Project } from "@/content/projects";
 
 export const dynamicParams = false;
 
@@ -23,10 +23,6 @@ const columns = "mx-auto grid max-w-[1200px] gap-12 px-4 sm:px-6 lg:grid-cols-[2
 const single = "mx-auto max-w-[1200px] px-4 sm:px-6";
 /** Below this, the reading-progress bar and "On this page" list are noise. */
 const LONG_ARTICLE_WORDS = 500;
-
-const shortOrg = (p: Project) =>
-  [p.organisation?.replace(" Chartered Accountants", ""), p.period?.replace("2024–2025", "2024–25")].filter(Boolean).join(" · ") ||
-  p.kind;
 
 export default async function CaseStudyPage({ params }: PageProps<"/projects/[slug]">) {
   const project = getProject((await params).slug);
@@ -263,7 +259,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/projects/[sl
                 className={`glass lift flex flex-col gap-2.5 rounded-card p-7 ${n === 1 ? "sm:text-right" : ""}`}
               >
                 <span className="font-mono text-xs text-muted uppercase">
-                  {String(label)} · {shortOrg(proj)}
+                  {String(label)} · {byline(proj) || proj.kind}
                 </span>
                 <span className="font-serif text-display-5 leading-[1.05]">{proj.name}</span>
                 <span className="text-[15px] leading-relaxed text-soft">{proj.summary}</span>

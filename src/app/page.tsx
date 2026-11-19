@@ -3,7 +3,8 @@ import Link from "next/link";
 import { pageMetadata } from "@/app/shared-metadata";
 import { Icon, type IconName } from "@/components/icons";
 import { ButtonLink, Eyebrow } from "@/components/ui";
-import { getProject, type Project } from "@/content/projects";
+import { approach } from "@/content/approach";
+import { byline, getProject } from "@/content/projects";
 import { site } from "@/content/site";
 
 // Figures below come from src/content (owner's CV). Don't add numbers that aren't there.
@@ -40,15 +41,6 @@ const workCards: { slug: string; icon: IconName }[] = [
   { slug: "glide-apps-xero-integration", icon: "grid" },
 ];
 
-const approach = [
-  ["Understand", "How the process works today, who uses it, what a good outcome looks like."],
-  ["Design", "The simplest solution that fits. Data, rules and edge cases agreed up front."],
-  ["Build", "Usable increments with typed, readable code."],
-  ["Integrate", "Systems connected through clear, validated interfaces."],
-  ["Automate", "Repetitive steps removed, people kept in control of decisions."],
-  ["Maintain", "Important paths tested, documentation others can follow."],
-];
-
 const sampleLog = [
   ["01", "trigger    file received"],
   ["02", "validate   type, size, pages"],
@@ -58,8 +50,6 @@ const sampleLog = [
 ];
 
 export const metadata: Metadata = pageMetadata("/");
-
-const byline = (p: Project) => [p.organisation?.replace(" Chartered Accountants", ""), p.period?.replace("2024–2025", "2024–25")].filter(Boolean).join(" · ");
 
 export default function Home() {
   const billing = getProject("billing-run-automation")!;
@@ -150,7 +140,10 @@ export default function Home() {
       </section>
 
       {/* Highlights */}
-      <section aria-label="Highlights" className="mx-auto flex max-w-[1200px] flex-wrap gap-5 px-4 pb-28 sm:px-6">
+      <section aria-labelledby="highlights-title" className="mx-auto flex max-w-[1200px] flex-wrap gap-5 px-4 pb-28 sm:px-6">
+        <h2 id="highlights-title" className="sr-only">
+          Highlights
+        </h2>
         <figure className="glass m-0 flex flex-[2_1_460px] flex-col justify-between gap-5 rounded-card p-6 sm:p-8">
           <p className="font-mono text-xs tracking-[0.04em] text-muted">RUN-TIME / WEEKLY BILLING</p>
           <p className="font-serif text-display-4 leading-[1.02] italic">
@@ -176,7 +169,7 @@ export default function Home() {
             <span className="text-accent">Playground workflow</span>
             <span className="font-mono text-xs font-normal text-muted">simulated</span>
           </p>
-          <h2 className="mt-1.5 font-serif text-display-6 leading-[1.1]">Expense approval</h2>
+          <h3 className="mt-1.5 font-serif text-display-6 leading-[1.1]">Expense approval</h3>
           <ol className="mt-4 flex flex-col gap-3">
             {demoSteps.map(([label, type], i) => (
               <li key={label} className="flex items-center gap-3 text-[15px]">
@@ -224,7 +217,7 @@ export default function Home() {
             className="glass lift col-span-full flex flex-wrap items-end justify-between gap-8 rounded-card p-6 sm:p-9"
           >
             <span className="min-w-0 flex-[999_1_520px]">
-              <span className="block font-mono text-xs tracking-[0.06em] text-accent">COVER STORY · AUTOMATION · 2024–25</span>
+              <span className="block font-mono text-xs tracking-[0.06em] text-accent">COVER STORY · AUTOMATION · {billing.periodShort ?? billing.period}</span>
               <span className="mt-3 block font-serif text-display-4 leading-[1.02]">{billing.headline}</span>
               <span className="mt-3.5 block max-w-[620px] text-[17px] leading-relaxed text-soft">
                 Around 200–400 invoices prepared from CSV every week at an accounting firm. As its sole automation

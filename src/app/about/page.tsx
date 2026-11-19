@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { RolePoints } from "@/components/role-points";
 import { Container, Eyebrow, SectionHeading } from "@/components/ui";
+import { approach } from "@/content/approach";
 import { education, experience, languages } from "@/content/experience";
 import { site } from "@/content/site";
 import { skillGroups } from "@/content/skills";
@@ -12,15 +13,6 @@ export const metadata: Metadata = pageMetadata("/about/", {
   title: "About",
   description: "Background, experience, skills and approach to building and automating software.",
 });
-
-const approach = [
-  ["Understand", "Learn how the process works today, who uses it and what a good outcome looks like."],
-  ["Design", "Choose the simplest solution that fits, and agree on data, rules and edge cases up front."],
-  ["Build", "Ship usable increments with typed, readable code."],
-  ["Integrate", "Connect the systems involved through clear, validated interfaces."],
-  ["Automate", "Remove repetitive steps while keeping people in control of decisions."],
-  ["Test and maintain", "Check the important paths and leave documentation others can follow."],
-];
 
 // "English (fluent)" → "English · fluent"
 const spoken = languages.map((l) => l.replace(/ \((.+)\)$/, " · $1"));
@@ -147,10 +139,10 @@ export default function AboutPage() {
       </section>
 
       <div className="mt-28 grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] gap-5">
-        {education.map((e) => (
-          <section key={e.title} aria-labelledby="edu-title" className="glass rounded-card p-[30px]">
+        {education.map((e, i) => (
+          <section key={e.title} aria-labelledby={`edu-title-${i}`} className="glass rounded-card p-[30px]">
             <Eyebrow>Education</Eyebrow>
-            <h2 id="edu-title" className="mt-2.5 font-serif text-display-5 leading-[1.05]">
+            <h2 id={`edu-title-${i}`} className="mt-2.5 font-serif text-display-5 leading-[1.05]">
               {e.title}
             </h2>
             <p className="mt-3 text-soft">{e.organisation}</p>
