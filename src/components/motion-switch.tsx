@@ -38,7 +38,8 @@ export function MotionSwitch() {
       onClick={toggle}
       className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-1.5 pl-2.5 text-sm"
     >
-      <span>Motion</span>
+      {/* Visually hidden on very narrow screens so the site name fits; still the switch's accessible name. */}
+      <span className="max-[399px]:sr-only">Motion</span>
       <span
         aria-hidden="true"
         className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-250 ${on ? "bg-ok" : "bg-[rgb(120_120_128/0.42)]"}`}

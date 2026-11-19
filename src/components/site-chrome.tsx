@@ -35,7 +35,7 @@ export function SiteHeader() {
 /** Below 900px the header nav is replaced by this bottom tab bar. */
 export function TabBar() {
   return (
-    <nav aria-label="Sections" className="sticky bottom-4 z-20 flex justify-center px-3 pb-4 min-[900px]:hidden">
+    <nav aria-label="Sections" className="sticky bottom-4 z-20 flex justify-center px-2 pb-4 min-[360px]:px-3 min-[900px]:hidden">
       <TabLinks />
     </nav>
   );

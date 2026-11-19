@@ -47,7 +47,7 @@ const tabs: { href: string; label: string; icon: IconName }[] = [
 export function TabLinks() {
   const pathname = usePathname();
   return (
-    <ul className="glass flex gap-0.5 rounded-full p-1.5">
+    <ul className="glass flex gap-0.5 rounded-full p-1.5 min-[360px]:[&_a]:min-w-[62px]">
       {tabs.map(({ href, label, icon }) => {
         const active = href === "/" ? pathname === "/" : isActive(pathname, href);
         return (
@@ -56,7 +56,7 @@ export function TabLinks() {
               href={href}
               prefetch={href === "/playground/" ? false : undefined}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-[52px] min-w-[62px] flex-col items-center justify-center gap-[3px] rounded-full text-[11px] font-semibold ${
+              className={`flex min-h-[52px] min-w-14 flex-col items-center justify-center gap-[3px] rounded-full text-[11px] font-semibold ${
                 active ? "bg-[rgb(255_210_63/0.18)] text-accent" : "text-soft"
               }`}
             >
