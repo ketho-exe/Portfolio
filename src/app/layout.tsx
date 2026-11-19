@@ -45,6 +45,19 @@ const csp = [
   "form-action 'self'",
 ].join("; ");
 
+// Structured data for search engines. Only fields from `site`; nothing added.
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  jobTitle: site.role,
+  ...(site.url && { url: `${site.url}/` }),
+  ...(site.email && { email: site.email }),
+  sameAs: [site.linkedin, site.github].filter(Boolean),
+};
+// "<" escaped so content can never close the script tag.
+const personJson = JSON.stringify(person).replace(/</g, "\\u003c");
+
 // Runs before paint so a visitor who switched decorative motion off doesn't see it start.
 const motionScript = `(function(){try{if(localStorage.getItem("motion")==="off")document.documentElement.dataset.motion="off"}catch(e){}})()`;
 
@@ -58,6 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {process.env.NODE_ENV === "production" && <meta httpEquiv="Content-Security-Policy" content={csp} />}
         <script dangerouslySetInnerHTML={{ __html: motionScript }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJson }} />
       </head>
       <body className="relative flex min-h-full flex-col overflow-x-clip">
         <div aria-hidden="true" className="bg-dots" />
