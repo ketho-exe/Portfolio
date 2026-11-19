@@ -369,6 +369,11 @@ body {
   opacity: 1;
   transform: none;
 }
+/* Decorative loops only run while the menu is open. */
+.fab:not(.open) .fab-ring > span,
+.fab:not(.open) .fab-float {
+  animation-play-state: paused;
+}
 .fab.open .fab-item {
   opacity: 1;
   transform: translate(var(--x), var(--y));

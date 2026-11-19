@@ -10,7 +10,8 @@ type Item = { label: string; href: string; icon: IconName; external: boolean };
 type Mode = "hover" | "pinned" | null;
 
 /**
- * Floating contact button that fans out email, LinkedIn and GitHub.
+ * Floating contact button that fans out email, LinkedIn and GitHub. Desktop only: below 900px the tab bar
+ * already has Contact, and the button would cover content.
  * Open state lives in React, not CSS :hover/:focus-within, because touch browsers keep those
  * "stuck" after a tap, which made the menu impossible to close on phones.
  */
@@ -47,7 +48,7 @@ export function ContactButton() {
   return (
     <div
       ref={root}
-      className={`fab fixed right-5 bottom-[100px] z-30 size-16 min-[900px]:right-8 min-[900px]:bottom-8 ${open ? "open" : ""} ${mode === "pinned" ? "pinned" : ""}`}
+      className={`fab fixed right-8 bottom-8 z-30 hidden size-16 min-[900px]:block ${open ? "open" : ""} ${mode === "pinned" ? "pinned" : ""}`}
       onPointerEnter={(e) => e.pointerType === "mouse" && !mode && setMode("hover")}
       onPointerLeave={(e) => e.pointerType === "mouse" && mode === "hover" && setMode(null)}
       onBlur={(e) => {
