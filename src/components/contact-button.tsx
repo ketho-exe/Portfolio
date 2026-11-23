@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { site } from "@/content/site";
 import { Icon, type IconName } from "./icons";
@@ -10,7 +9,7 @@ type Item = { label: string; href: string; icon: IconName; external: boolean };
 type Mode = "hover" | "pinned" | null;
 
 /**
- * Floating contact button that fans out email, LinkedIn and GitHub. Desktop only: below 768px the tab bar
+ * Floating contact button with a small menu of email, LinkedIn and GitHub. Desktop only: below 768px the tab bar
  * already has Contact, and the button would cover content.
  * Open state lives in React, not CSS :hover/:focus-within, because touch browsers keep those
  * "stuck" after a tap, which made the menu impossible to close on phones.
@@ -33,22 +32,16 @@ export function ContactButton() {
   }, [open]);
 
   const items = [
-    site.github && { label: "GitHub", href: site.github, icon: "github", external: true },
-    site.linkedin && { label: "LinkedIn", href: site.linkedin, icon: "linkedin", external: true },
     site.email && { label: "Email", href: `mailto:${site.email}`, icon: "mail", external: false },
+    site.linkedin && { label: "LinkedIn", href: site.linkedin, icon: "linkedin", external: true },
+    site.github && { label: "GitHub", href: site.github, icon: "github", external: true },
   ].filter(Boolean) as Item[];
-  // Positions along a quarter circle, up and to the left of the button.
-  const spots = [
-    ["-96px", "0px"],
-    ["-68px", "-68px"],
-    ["0px", "-96px"],
-  ];
 
   if (!items.length) return null;
   return (
     <div
       ref={root}
-      className={`fab fixed right-8 bottom-8 z-30 hidden size-16 md:block ${open ? "open" : ""} ${mode === "pinned" ? "pinned" : ""}`}
+      className={`fab fixed right-8 bottom-8 z-30 hidden md:block ${open ? "open" : ""}`}
       onPointerEnter={(e) => e.pointerType === "mouse" && !mode && setMode("hover")}
       onPointerLeave={(e) => e.pointerType === "mouse" && mode === "hover" && setMode(null)}
       onBlur={(e) => {
@@ -61,10 +54,26 @@ export function ContactButton() {
         }
       }}
     >
-      <span className="fab-hit" aria-hidden="true" />
-      <span className="fab-ring" aria-hidden="true">
-        <span className="loop" />
-      </span>
+      {/* The padding below the list belongs to the menu, so the pointer can cross from button to links. */}
+      <div className="fab-menu absolute right-0 bottom-full pb-2">
+        {/* inert while closed, so the hidden links can't be tabbed to or tapped. */}
+        <ul id="contact-links" aria-label="Contact links" inert={!open} className="chrome w-44 rounded-panel p-1">
+          {items.map((item) => (
+            <li key={item.label}>
+              <a
+                href={item.href}
+                onClick={() => setMode(null)}
+                className="flex min-h-11 items-center gap-3 rounded-chip px-3 text-sm text-soft transition-colors hover:bg-white/8 hover:text-fg focus-visible:bg-white/8 focus-visible:text-fg"
+                {...(item.external && { target: "_blank", rel: "noopener noreferrer" })}
+              >
+                <Icon name={item.icon} size={16} strokeWidth={1.5} />
+                {item.label}
+                {item.external && <span className="sr-only"> (opens in a new tab)</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
       <button
         ref={button}
         type="button"
@@ -72,32 +81,10 @@ export function ContactButton() {
         aria-expanded={open}
         aria-controls="contact-links"
         onClick={() => setMode(mode === "pinned" ? null : "pinned")}
-        className="relative z-[2] size-16 cursor-pointer rounded-full border border-border-strong bg-accent text-accent-fg shadow-[0_12px_32px_var(--accent-hairline)] transition-transform duration-300 ease-(--spring) hover:scale-[1.07]"
+        className="tap flex size-14 cursor-pointer items-center justify-center rounded-panel border border-border-strong bg-surface-solid text-fg hover:bg-[#1c1d21]"
       >
-        <Icon name="chat" size={26} className="fab-icon-swap fab-chat" />
-        <Icon name="close" size={24} strokeWidth={2.4} className="fab-icon-swap fab-close" />
+        <Icon name={mode === "pinned" ? "close" : "chat"} size={20} strokeWidth={1.5} />
       </button>
-      {/* inert while closed, so the hidden links can't be tabbed to or tapped. */}
-      <ul id="contact-links" aria-label="Contact links" inert={!open}>
-        {items.map((item, i) => (
-          <li key={item.label} className="fab-item" style={{ "--i": i, "--x": spots[i][0], "--y": spots[i][1] } as CSSProperties}>
-            <span className="fab-float loop" style={{ "--i": i } as CSSProperties}>
-              <a
-                href={item.href}
-                aria-label={item.external ? `${item.label} (opens in a new tab)` : item.label}
-                onClick={() => setMode(null)}
-                className="fab-link glass relative flex size-[52px] items-center justify-center rounded-full"
-                {...(item.external && { target: "_blank", rel: "noopener noreferrer" })}
-              >
-                <Icon name={item.icon} size={22} />
-                <span className="fab-tip" aria-hidden="true">
-                  {item.label}
-                </span>
-              </a>
-            </span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

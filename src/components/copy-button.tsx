@@ -27,7 +27,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
       <button
         type="button"
         onClick={copy}
-        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-sm font-semibold transition-colors hover:bg-surface-2"
+        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-control border border-border-strong px-4 text-sm font-medium transition-colors hover:bg-surface-2"
       >
         <Icon name={state === "copied" ? "check" : "copy"} size={16} />
         {state === "copied" ? "Copied" : label}

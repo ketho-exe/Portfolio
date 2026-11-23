@@ -196,22 +196,22 @@ export function Playground() {
           ? { text: "Failed", tone: "text-danger" }
           : { text: "Not run: invalid input", tone: "text-danger" };
 
-  const control = "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-[18px] text-[15px] font-semibold";
+  const control = "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-control px-4 text-base font-medium";
 
   return (
     <>
-      <section ref={runner} aria-label="Workflow runner" className="glass mt-9 scroll-mt-24 overflow-hidden rounded-card">
+      <section ref={runner} aria-label="Workflow runner" className="panel mt-8 scroll-mt-24 overflow-hidden rounded-card">
         {/* Workflow picker and run controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3.5 py-3">
-          <div role="group" aria-label="Workflow" className="inline-flex flex-wrap gap-1 rounded-full bg-surface-2 p-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <div role="group" aria-label="Workflow" className="inline-flex flex-wrap gap-1 rounded-control bg-surface-2 p-1">
             {workflows.map((w, i) => (
               <button
                 key={w.definition.id}
                 type="button"
                 aria-pressed={i === workflowIndex}
                 onClick={() => pickWorkflow(i)}
-                className={`min-h-10 cursor-pointer rounded-full px-4 text-sm transition-colors ${
-                  i === workflowIndex ? "bg-accent font-bold text-accent-fg" : "font-semibold text-soft hover:text-fg"
+                className={`min-h-10 cursor-pointer rounded-chip px-4 text-sm font-medium transition-colors ${
+                  i === workflowIndex ? "bg-white/10 text-fg shadow-[inset_0_0_0_1px_var(--border)]" : "text-soft hover:text-fg"
                 }`}
               >
                 {w.definition.name}
@@ -239,7 +239,7 @@ export function Playground() {
               type="button"
               onClick={run}
               disabled={!parsed.ok || running}
-              className={`${control} tap bg-accent px-[22px] font-bold text-accent-fg disabled:cursor-not-allowed disabled:opacity-40`}
+              className={`${control} tap bg-accent px-6 font-medium text-accent-fg disabled:cursor-not-allowed disabled:opacity-40`}
             >
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M7 4.5v15l13-7.5z" />
@@ -253,14 +253,14 @@ export function Playground() {
         <div className="flex flex-col gap-4 border-b border-border p-4 sm:p-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2 className="font-serif text-3xl leading-tight">{def.name}</h2>
-            <p className="mt-1.5 text-[15px] leading-relaxed text-soft text-pretty">{def.description}</p>
+            <p className="mt-2 text-base leading-relaxed text-soft text-pretty">{def.description}</p>
           </div>
-          <label className="flex shrink-0 flex-col gap-1.5 font-mono text-[11px] tracking-[0.08em] text-muted uppercase">
+          <label className="flex shrink-0 flex-col gap-2 font-mono text-xs text-muted">
             Sample input
             <select
               value={file ? "" : sampleId}
               onChange={(e) => loadSample(e.target.value)}
-              className="h-11 min-w-56 cursor-pointer rounded-chip border border-border-strong bg-surface-solid px-3 font-sans text-[15px] tracking-normal text-fg normal-case"
+              className="h-11 min-w-56 cursor-pointer rounded-chip border border-border-strong bg-surface-solid px-3 font-sans text-base tracking-normal text-fg normal-case"
             >
               {file && (
                 <option value="" disabled>
@@ -276,7 +276,7 @@ export function Playground() {
           </label>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5 text-[13px] sm:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5 text-sm sm:px-5">
           <p className="text-soft">
             {file ? `Your file: ${file.name} (${formatBytes(file.size)}). Read on this device, never uploaded.` : sample.description}
           </p>
@@ -339,11 +339,11 @@ export function Playground() {
 
       <section aria-labelledby="own-title" className="mt-[72px] flex flex-wrap gap-5">
         <div className="min-w-0 flex-[1_1_380px]">
-          <p className="font-mono text-xs tracking-[0.08em] text-accent">BRING YOUR OWN</p>
-          <h2 id="own-title" className="mt-2.5 font-serif text-display-3 leading-none">
+          <p className="font-mono text-xs text-accent">Bring your own</p>
+          <h2 id="own-title" className="mt-3 font-serif text-display-3 leading-none">
             Run it on your own document.
           </h2>
-          <p className="mt-4 max-w-[480px] text-[17px] leading-relaxed text-soft">
+          <p className="mt-4 max-w-[480px] text-lg leading-relaxed text-soft">
             Invoice extraction reads your PDF or image; email routing reads your .eml file. It&apos;s all read in your
             browser. Nothing is uploaded or stored, and the page can&apos;t contact other servers.
           </p>

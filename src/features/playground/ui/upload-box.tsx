@@ -43,10 +43,10 @@ export function UploadBox({
   return (
     <div className="min-w-0 flex-[1_1_420px]">
       {file ? (
-        <div className="glass flex flex-col gap-4 rounded-card border-2! border-accent-line! p-6 sm:p-8">
+        <div className="panel flex flex-col gap-4 rounded-card border-2! border-accent-line! p-6 sm:p-8">
           <p className="min-w-0">
-            <span className="block font-mono text-xs tracking-[0.06em] text-accent">READY ON THIS DEVICE</span>
-            <span className="mt-2 block truncate text-lg font-semibold">{file.name}</span>
+            <span className="block font-mono text-xs text-accent">Ready on this device</span>
+            <span className="mt-2 block truncate text-lg font-medium">{file.name}</span>
             <span className="text-sm text-soft">{formatBytes(file.size)} · not uploaded</span>
           </p>
           <div className="flex flex-wrap gap-2">
@@ -54,7 +54,7 @@ export function UploadBox({
               type="button"
               onClick={onRun}
               disabled={!canRun}
-              className="tap inline-flex min-h-11 cursor-pointer items-center rounded-full bg-accent px-5 text-[15px] font-bold text-accent-fg disabled:cursor-not-allowed disabled:opacity-40"
+              className="tap inline-flex min-h-11 cursor-pointer items-center rounded-control bg-accent px-5 text-base font-medium text-accent-fg disabled:cursor-not-allowed disabled:opacity-40"
             >
               Run it
             </button>
@@ -62,7 +62,7 @@ export function UploadBox({
               type="button"
               onClick={onClear}
               disabled={disabled}
-              className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border-strong px-5 text-[15px] font-semibold transition-colors hover:bg-surface-2 disabled:opacity-40"
+              className="inline-flex min-h-11 cursor-pointer items-center rounded-control border border-border-strong px-5 text-base font-medium transition-colors hover:bg-surface-2 disabled:opacity-40"
             >
               Remove file
             </button>
@@ -76,14 +76,14 @@ export function UploadBox({
           }}
           onDragLeave={() => setOver(false)}
           onDrop={onDrop}
-          className={`glass flex cursor-pointer flex-col items-center justify-center gap-3 rounded-card border-2! border-dashed! p-9 text-center transition-colors focus-within:border-accent! hover:border-accent! ${
+          className={`panel flex cursor-pointer flex-col items-center justify-center gap-3 rounded-card border-2! border-dashed! p-9 text-center transition-colors focus-within:border-accent! hover:border-accent! ${
             over ? "border-accent! bg-accent-soft!" : "border-border-strong!"
           }`}
         >
           <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
           </svg>
-          <span className="text-lg font-semibold">Choose a file or drop it here</span>
+          <span className="text-lg font-medium">Choose a file or drop it here</span>
           <span className="font-mono text-xs leading-[1.7] text-soft">
             PDF, PNG, JPG, WebP, TXT or .eml · up to 10 MB
             <br />
@@ -107,7 +107,7 @@ export function UploadBox({
           {error}
         </p>
       )}
-      <p className="mt-3 text-[13px] text-muted">
+      <p className="mt-3 text-sm text-muted">
         Read in this browser and never uploaded. Nothing is saved: it&apos;s gone when you reset or leave the page.
       </p>
     </div>

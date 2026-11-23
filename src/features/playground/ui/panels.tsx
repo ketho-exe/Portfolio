@@ -137,7 +137,7 @@ export function StepPanel({
       </button>
       <div>
         <p className="font-mono text-[10px] text-muted uppercase">{typeLabel[node.type]}</p>
-        <h3 className="mt-1 font-semibold">{node.label}</h3>
+        <h3 className="mt-1 font-medium">{node.label}</h3>
         {node.description && <p className="mt-1 text-muted text-pretty">{node.description}</p>}
         <div className="mt-2">
           <StatusChip status={statuses[node.id]} />
@@ -203,13 +203,13 @@ export function ResultPanel({
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-4 sm:p-5">
         <p className="text-sm">
-          <span className="font-semibold text-accent">Paused at “{labelOf(result.waitingAt!)}”.</span> Check the fields in
+          <span className="font-medium text-accent">Paused at “{labelOf(result.waitingAt!)}”.</span> Check the fields in
           the Review tab, then confirm or reject.
         </p>
         <button
           type="button"
           onClick={onOpenReview}
-          className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 text-sm font-semibold transition hover:bg-surface-2"
+          className="min-h-11 cursor-pointer rounded-control border border-border-strong px-4 text-sm font-medium transition hover:bg-surface-2"
         >
           Open review
         </button>
@@ -220,7 +220,7 @@ export function ResultPanel({
   return (
     <div className="border-t border-border p-4 sm:p-5">
       <p className="font-mono text-xs tracking-[0.08em] text-muted uppercase">Final result</p>
-      {result.status === "success" && <p className="mt-2 font-semibold text-ok">The workflow completed.</p>}
+      {result.status === "success" && <p className="mt-2 font-medium text-ok">The workflow completed.</p>}
       {failedAt && (
         <p className="mt-2 text-sm">
           <span className="text-danger">Stopped at “{labelOf(failedAt)}”:</span> {result.error}
@@ -247,10 +247,10 @@ export function ResultPanel({
             <Json value={result.output} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" onClick={() => download(`${fileStem}-result.json`, `${pretty(result.output)}\n`, "application/json")} className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 font-semibold transition hover:bg-surface-2">
+            <button type="button" onClick={() => download(`${fileStem}-result.json`, `${pretty(result.output)}\n`, "application/json")} className="min-h-11 cursor-pointer rounded-control border border-border-strong px-4 font-medium transition hover:bg-surface-2">
               Download JSON
             </button>
-            <button type="button" onClick={() => download(`${fileStem}-result.csv`, toCsv(result.output!), "text/csv")} className="min-h-11 cursor-pointer rounded-full border border-border-strong px-4 font-semibold transition hover:bg-surface-2">
+            <button type="button" onClick={() => download(`${fileStem}-result.csv`, toCsv(result.output!), "text/csv")} className="min-h-11 cursor-pointer rounded-control border border-border-strong px-4 font-medium transition hover:bg-surface-2">
               Download CSV
             </button>
             <span className="text-xs text-muted">Generated in your browser.</span>

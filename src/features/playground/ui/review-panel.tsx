@@ -43,12 +43,12 @@ export function ReviewPanel({
     onDecide({ action: "approve", values });
   }
 
-  const box = "mt-1.5 h-11 w-full rounded-chip border bg-surface-solid px-3 text-[15px] text-fg";
+  const box = "mt-1.5 h-11 w-full rounded-chip border bg-surface-solid px-3 text-base text-fg";
 
   return (
     <form onSubmit={approve} noValidate className="space-y-4 text-sm">
       <div>
-        <h3 className="font-semibold">Your turn: check the fields</h3>
+        <h3 className="font-medium">Your turn: check the fields</h3>
         <p className="mt-1 text-xs leading-relaxed text-soft text-pretty">
           The run is paused. {flaggedCount} of {items.length} fields are flagged: read with under {percent}% confidence,
           or not found. Correct anything that&apos;s wrong, then confirm. This happens on your device.
@@ -57,7 +57,7 @@ export function ReviewPanel({
 
       {reference && (
         <details className="rounded-chip border border-border bg-code">
-          <summary className="min-h-10 cursor-pointer px-3 py-2.5 text-xs font-semibold">Show the document text</summary>
+          <summary className="min-h-10 cursor-pointer px-3 py-2.5 text-xs font-medium">Show the document text</summary>
           <pre className="max-h-48 overflow-auto px-3 pb-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">{reference}</pre>
         </details>
       )}
@@ -128,14 +128,14 @@ export function ReviewPanel({
       <div className="flex flex-wrap gap-2 pt-1">
         <button
           type="submit"
-          className="tap inline-flex min-h-11 cursor-pointer items-center rounded-full bg-accent px-5 text-[15px] font-bold text-accent-fg"
+          className="tap inline-flex min-h-11 cursor-pointer items-center rounded-control bg-accent px-5 text-base font-medium text-accent-fg"
         >
           Confirm and continue
         </button>
         <button
           type="button"
           onClick={() => onDecide({ action: "reject" })}
-          className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border-strong px-5 text-[15px] font-semibold transition-colors hover:bg-surface-2"
+          className="inline-flex min-h-11 cursor-pointer items-center rounded-control border border-border-strong px-5 text-base font-medium transition-colors hover:bg-surface-2"
         >
           Reject document
         </button>

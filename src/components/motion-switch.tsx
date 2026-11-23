@@ -36,17 +36,17 @@ export function MotionSwitch() {
       role="switch"
       aria-checked={on}
       onClick={toggle}
-      className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-1.5 pl-2.5 text-sm"
+      className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-control px-2 text-sm text-soft hover:text-fg"
     >
       {/* Visually hidden on very narrow screens so the site name fits; still the switch's accessible name. */}
       <span className="max-[374px]:sr-only">Motion</span>
       <span
         aria-hidden="true"
-        className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-250 ${on ? "bg-ok" : "bg-border-strong"}`}
+        className={`relative h-6 w-10 rounded-full transition-colors duration-150 ${on ? "bg-soft" : "bg-border-strong"}`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 size-[27px] rounded-full bg-white shadow-md transition-transform duration-300 ease-(--spring) ${
-            on ? "translate-x-5" : ""
+          className={`absolute top-0.5 left-0.5 size-5 rounded-full transition-[transform,background-color] duration-150 ease-(--ease) ${
+            on ? "translate-x-4 bg-bg" : "bg-soft"
           }`}
         />
       </span>

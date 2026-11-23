@@ -9,7 +9,7 @@ import "./globals.css";
 
 // Self-hosted at build time by next/font, so no request goes to Google (and the CSP holds).
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
+const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400" });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -55,10 +55,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJson }} />
       </head>
       <body className="relative flex min-h-full flex-col overflow-x-clip">
-        <div aria-hidden="true" className="bg-dots" />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-chip focus:bg-accent focus:px-4 focus:py-3 focus:font-bold focus:text-accent-fg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-chip focus:bg-accent focus:px-4 focus:py-3 focus:font-medium focus:text-accent-fg"
         >
           Skip to content
         </a>

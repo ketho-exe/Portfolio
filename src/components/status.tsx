@@ -1,9 +1,9 @@
 import type { Project } from "@/content/projects";
 
-/** Delivered = yellow, live / in progress = green. */
+/** Delivered = neutral, live / in progress = green (it is running). */
 export function StatusDot({ status }: { status: Project["status"] }) {
-  const style = status === "Delivered" ? "bg-accent" : "bg-ok";
-  return <span aria-hidden="true" className={`inline-block size-[9px] shrink-0 rounded-full ${style}`} />;
+  const style = status === "Delivered" ? "bg-soft" : "bg-ok";
+  return <span aria-hidden="true" className={`inline-block size-2 shrink-0 rounded-full ${style}`} />;
 }
 
 export const statusMeaning: [Project["status"], string][] = [

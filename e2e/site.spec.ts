@@ -174,7 +174,17 @@ test("the home highlights sit under one visually hidden heading", async ({ page 
   await page.goto("/");
   const highlights = page.getByRole("region", { name: "Highlights" });
   await expect(highlights.getByRole("heading", { level: 2 })).toHaveText("Highlights");
-  await expect(highlights.getByRole("heading", { level: 3, name: "Expense approval" })).toBeVisible();
+  await expect(highlights.getByText("≤ 30 minutes")).toBeVisible();
+});
+
+test("the home hero shows a real run of the invoice workflow, labelled as a sample", async ({ page }) => {
+  await page.goto("/");
+  const run = page.getByRole("figure", { name: /Invoice extraction/ });
+  await expect(run).toContainText("brightline-inv-20431.pdf");
+  await expect(run).toContainText("sample run");
+  await expect(run).toContainText("£337.68");
+  await expect(run).toContainText("Ready for approval");
+  await expect(run.getByText(/text extraction is\s+simulated/)).toBeVisible();
 });
 
 test("ids on the About page are unique", async ({ page }) => {
@@ -223,7 +233,7 @@ test("on a wide touch screen, the contact button opens and closes with taps", as
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
-  const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
+  const linkedin = page.getByRole("list", { name: "Contact links" }).getByRole("link", { name: /LinkedIn/ });
   await button.tap();
   await expect(button).toHaveAttribute("aria-expanded", "true");
   await expect(linkedin).toBeVisible();
@@ -236,28 +246,17 @@ test("on a wide touch screen, the contact button opens and closes with taps", as
   await expect(button).toHaveAttribute("aria-expanded", "false");
 });
 
-test("on desktop, hovering previews the links and they stay readable on hover", async ({ page, isMobile }) => {
+test("on desktop, hovering previews the links and the pointer can reach them", async ({ page, isMobile }) => {
   test.skip(isMobile, "mouse journey");
   await page.goto("/about/");
   const button = page.getByRole("button", { name: "Contact me" });
-  // Its decorative loops are paused while it's closed.
-  const ring = page.locator(".fab-ring > span");
-  await expect(ring).toHaveCSS("animation-play-state", "paused");
   await button.hover();
-  await expect(ring).toHaveCSS("animation-play-state", "running");
-  const linkedin = page.locator(".fab-link", { hasText: "LinkedIn" });
+  const linkedin = page.getByRole("list", { name: "Contact links" }).getByRole("link", { name: /LinkedIn/ });
   await expect(linkedin).toBeVisible();
-  // Let the fan-out transition finish so the mouse lands on LinkedIn, not where it is mid-flight.
-  await linkedin.evaluate((a) => Promise.all(a.closest(".fab-item")!.getAnimations().map((t) => t.finished)));
-  await linkedin.hover({ force: true }); // it floats, so it is never "stable"
-  // Yellow with a dark icon, and a light label on a dark tip (the bug: glass background, dark icon, dark label).
-  const colours = () =>
-    linkedin.evaluate((a) => {
-      const tip = getComputedStyle(a.querySelector(".fab-tip")!);
-      return [getComputedStyle(a).backgroundColor, getComputedStyle(a).color, tip.color];
-    });
-  await expect.poll(colours).toEqual(["rgb(255, 210, 63)", "rgb(17, 18, 20)", "rgb(255, 255, 255)"]);
-  await expect(linkedin.locator(".fab-tip")).toBeVisible();
+  // Moving from the button up to a link keeps the menu open.
+  await linkedin.hover();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await expect(linkedin).toBeVisible();
   // Clicking pins it open; clicking the close button shuts it even with the mouse still over it.
   await button.click();
   await expect(button).toHaveAttribute("aria-expanded", "true");

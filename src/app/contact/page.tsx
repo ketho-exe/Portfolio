@@ -28,48 +28,48 @@ export default function ContactPage() {
   return (
     <Container wide className="pt-16 pb-24 sm:pt-[72px]">
       <Eyebrow>Contact</Eyebrow>
-      <h1 className="mt-3.5 font-serif text-display-1 leading-[0.85] tracking-[-0.02em]">
-        Let&apos;s talk.
+      <h1 className="mt-4 font-serif text-display-1 leading-[0.85] tracking-[-0.02em]">
+        Let&apos;s talk
       </h1>
-      <p className="mt-7 max-w-[620px] text-xl leading-relaxed text-soft">
+      <p className="mt-6 max-w-[620px] text-xl leading-relaxed text-soft">
         Get in touch about software development and automation work, or a process you&apos;d like to take the manual
         work out of.
       </p>
 
-      <section aria-labelledby="mail-title" className="glass mt-14 rounded-card p-6 sm:p-9">
+      <section aria-labelledby="mail-title" className="panel mt-14 rounded-card p-6 sm:p-9">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="min-w-0">
-            <h2 id="mail-title" className="font-mono text-xs font-medium tracking-[0.08em] text-muted">
-              EMAIL · THE BEST WAY TO REACH ME
+            <h2 id="mail-title" className="text-sm font-medium text-muted">
+              Email, the best way to reach me
             </h2>
             {site.email ? (
               <a
                 href={`mailto:${site.email}`}
-                className="underline-grow mt-3.5 inline-block font-serif text-display-4 leading-none [overflow-wrap:anywhere]"
+                className="mt-4 inline-block font-serif text-display-4 leading-none underline decoration-border-strong decoration-1 underline-offset-[0.15em] transition-colors hover:decoration-fg [overflow-wrap:anywhere]"
               >
                 {site.email}
               </a>
             ) : (
-              <div className="mt-3.5">
+              <div className="mt-4">
                 <Placeholder>Email not supplied yet (src/content/site.ts)</Placeholder>
               </div>
             )}
           </div>
           {site.email && (
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <CopyButton text={site.email} label="Copy address" />
-              <ButtonAnchor href={`mailto:${site.email}`} className="min-h-11 px-5 text-[15px]">
+              <ButtonAnchor href={`mailto:${site.email}`} className="min-h-11 px-5 text-base">
                 Write an email
               </ButtonAnchor>
             </div>
           )}
         </div>
         <div className="mt-7 border-t border-border pt-6">
-          <h3 className="text-[15px] font-semibold">Writing about a process? It helps to mention:</h3>
+          <h3 className="text-base font-medium">Writing about a process? It helps to mention:</h3>
           <ol className="mt-4 grid gap-x-8 gap-y-3 md:grid-cols-3">
             {brief.map((b, i) => (
-              <li key={b} className="flex gap-3 text-[15px] leading-normal text-soft">
-                <span aria-hidden="true" className="font-mono text-[13px] leading-[1.6] text-accent">
+              <li key={b} className="flex gap-3 text-base leading-normal text-soft">
+                <span aria-hidden="true" className="font-mono text-sm leading-relaxed text-muted">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="text-pretty">{b}</span>
@@ -89,23 +89,22 @@ export default function ContactPage() {
               {c.href ? (
                 <a
                   href={c.href}
-                  className="glass group relative flex h-full flex-col gap-3.5 rounded-card p-[26px] transition duration-300 ease-(--spring) hover:-translate-y-1 hover:border-accent-line"
+                  className="panel lift group relative flex h-full flex-col gap-3 rounded-card p-6"
                   {...(c.external && { target: "_blank", rel: "noopener noreferrer" })}
                   {...(c.download && { download: true })}
                 >
-                  <span aria-hidden="true" className="flex size-[52px] items-center justify-center rounded-panel bg-accent-soft text-accent">
-                    <Icon name={c.icon} size={24} />
-                  </span>
-                  <span className="text-[22px] font-semibold">
+                  <Icon name={c.icon} size={20} strokeWidth={1.5} className="text-muted" />
+                  <span className="text-xl font-medium">
                     {c.download ? "Download CV" : c.label}
                     {c.download && <span className="ml-2 font-mono text-xs font-medium text-muted">PDF</span>}
                   </span>
-                  <span className="text-[15px] leading-normal text-soft">{c.body}</span>
+                  <span className="text-base leading-normal text-soft">{c.body}</span>
                   {c.external && <span className="sr-only">(opens in a new tab)</span>}
                   <Icon
                     name={c.download ? "download" : "arrowUpRight"}
                     size={20}
-                    className="absolute top-[26px] right-6 transition-transform group-hover:translate-x-[3px] group-hover:-translate-y-[3px]"
+                    strokeWidth={1.5}
+                    className="absolute top-6 right-6 text-muted transition-colors group-hover:text-fg"
                   />
                 </a>
               ) : (
