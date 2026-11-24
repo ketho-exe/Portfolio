@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ContactButton } from "@/components/contact-button";
 import { SiteFooter, SiteHeader, TabBar } from "@/components/site-chrome";
 import { site } from "@/content/site";
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteFooter />
         <TabBar />
         <ContactButton />
+        <Analytics />
       </body>
     </html>
   );
